@@ -80,6 +80,7 @@ in
     vscode
     wpsoffice-cn
     helix
+    telegram-desktop
 
     # ── 多媒体 ──
     ffmpeg

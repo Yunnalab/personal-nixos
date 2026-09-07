@@ -8,7 +8,8 @@
     experimental-features = [ "nix-command" "flakes" ];
     substituters = [
       "https://mirrors.ustc.edu.cn/nix-channels/store"
-      "https://mirror.sjtu.edu.cn/nix-channels/store"
+      # 上交镜像不稳定，注释掉：
+      # "https://mirror.sjtu.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
       "https://noctalia.cachix.org"
       # 南大镜像同步中（HTTP 500），暂时禁用；同步完成后恢复：
