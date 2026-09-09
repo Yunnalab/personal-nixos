@@ -1,3 +1,4 @@
+# MACHINE-SPECIFIC: the Windows EFI UUID below belongs to this computer.
 { ... }:
 
 {

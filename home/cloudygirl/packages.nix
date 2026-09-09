@@ -1,7 +1,7 @@
 { lib, pkgs, zen-browser, ... }:
 
 let
-  dsh-web-launch = pkgs.callPackage ../pkgs/dsh-web-launch.nix { };
+  dsh-web-launch = pkgs.callPackage ../../packages/dsh-web-launch.nix { };
 in
 {
   # 保持这些显式安装的包位于程序模块自动添加的包之后。

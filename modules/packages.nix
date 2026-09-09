@@ -1,9 +1,9 @@
 { pkgs, ... }:
 
 let
-  mdpdf = pkgs.callPackage ../pkgs/mdpdf.nix { };
-  autosub = pkgs.callPackage ../pkgs/autosub.nix { };
-  bili-notes-python = pkgs.callPackage ../pkgs/bili-notes-python.nix { };
+  mdpdf = pkgs.callPackage ../packages/mdpdf.nix { };
+  autosub = pkgs.callPackage ../packages/autosub.nix { };
+  bili-notes-python = pkgs.callPackage ../packages/bili-notes-python.nix { };
 in
 
 {

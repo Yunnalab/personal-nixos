@@ -1,19 +1,19 @@
 # 用户软件配置资源
 
-这里同时保存 Home Manager 部署的源文件和未接管的应用配置快照。是否生效由 `software/` 中的显式文件映射决定，而不是文件是否出现在本目录。
+这里同时保存 Home Manager 部署的源文件和未接管的应用配置快照。是否生效由 `home/cloudygirl/` 中的显式文件映射决定，而不是文件是否出现在本目录。
 
 ## 已声明管理
 
 | 源文件或目录 | 所属模块 | 部署位置 |
 | --- | --- | --- |
-| `niri/config.kdl` | `software/desktop.nix` | `~/.config/niri/config.kdl` |
-| `kitty/kitty.conf` | `software/desktop.nix` | `~/.config/kitty/kitty.conf` |
-| `noctalia/noctalia-base-settings-v4.json` | `software/desktop.nix` | `~/.config/noctalia/config.json` |
-| `swaylock/config` | `software/desktop.nix` | `~/.config/swaylock/config` |
-| `fcitx5/rime/` 中显式列出的六个文件 | `software/apps.nix` | `~/.local/share/fcitx5/rime/` |
-| `wps-desktop/` 中的三个桌面入口 | `software/apps.nix` | `~/.local/share/applications/` |
+| `niri/config.kdl` | `home/cloudygirl/desktop.nix` | `~/.config/niri/config.kdl` |
+| `kitty/kitty.conf` | `home/cloudygirl/desktop.nix` | `~/.config/kitty/kitty.conf` |
+| `noctalia/noctalia-base-settings-v4.json` | `home/cloudygirl/desktop.nix` | `~/.config/noctalia/config.json` |
+| `swaylock/config` | `home/cloudygirl/desktop.nix` | `~/.config/swaylock/config` |
+| `fcitx5/rime/` 中显式列出的六个文件 | `home/cloudygirl/apps.nix` | `~/.local/share/fcitx5/rime/` |
+| `wps-desktop/` 中的三个桌面入口 | `home/cloudygirl/apps.nix` | `~/.local/share/applications/` |
 
-Thunar 自定义动作由 `software/apps.nix` 生成；默认打开方式与 KDE/Niri 兼容文件由 `software/mime.nix` 生成，不使用此目录中的 `mimeapps.list` 快照。DeepSeek 桌面入口由 `software/packages.nix` 生成。
+Thunar 自定义动作由 `home/cloudygirl/apps.nix` 生成；默认打开方式与 KDE/Niri 兼容文件由 `home/cloudygirl/mime.nix` 生成，不使用此目录中的 `mimeapps.list` 快照。DeepSeek 桌面入口由 `home/cloudygirl/packages.nix` 生成。
 
 ## 未接管快照
 

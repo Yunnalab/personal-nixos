@@ -3,24 +3,24 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./modules/boot.nix
-    ./modules/desktop.nix
-    ./modules/hardware-tweaks.nix
-    ./modules/locale.nix
-    ./modules/networking.nix
-    ./modules/nvidia.nix
-    ./modules/nix-settings.nix
-    ./modules/packages.nix
-    ./modules/qq-fix.nix
-    ./modules/anki-fix.nix
-    ./modules/power.nix
-    ./modules/proxy.nix
-    ./modules/users.nix
+    ./boot.nix
+    ../../modules/desktop.nix
+    ./hardware-tweaks.nix
+    ../../modules/locale.nix
+    ../../modules/networking.nix
+    ./nvidia.nix
+    ../../modules/nix-settings.nix
+    ../../modules/packages.nix
+    ../../modules/qq-fix.nix
+    ../../modules/anki-fix.nix
+    ./power.nix
+    ../../modules/proxy.nix
+    ../../modules/users.nix
     ./sddm-theme.nix
-    ./modules/docker-setting.nix
-    ./modules/shell.nix
-    ./modules/steam.nix
-    ./modules/security
+    ../../modules/docker-setting.nix
+    ../../modules/shell.nix
+    ../../modules/steam.nix
+    ../../modules/security
   ];
 
   # Swap文件配置（8G）

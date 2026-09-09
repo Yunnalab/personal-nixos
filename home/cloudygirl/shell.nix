@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  aliases = import ../modules/shell-aliases-data.nix;
+  aliases = import ../../modules/shell-aliases-data.nix;
 in
 {
   programs.fish = {

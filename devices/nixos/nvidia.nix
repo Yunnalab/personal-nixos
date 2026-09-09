@@ -1,3 +1,4 @@
+# MACHINE-SPECIFIC: NVIDIA PRIME bus IDs must be detected on each computer.
 { pkgs, config, ... }:
 
 {

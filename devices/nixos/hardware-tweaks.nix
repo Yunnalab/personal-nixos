@@ -1,3 +1,4 @@
+# MACHINE-SPECIFIC: ASUS keyboard LED paths are not portable.
 { ... }:
 
 {

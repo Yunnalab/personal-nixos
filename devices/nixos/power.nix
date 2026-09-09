@@ -1,3 +1,4 @@
+# MACHINE-SPECIFIC: tuned for this Intel laptop's power and thermal behavior.
 { ... }:
 
 {

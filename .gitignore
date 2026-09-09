@@ -115,3 +115,27 @@ node_modules/
 *~
 .DS_Store
 Thumbs.db
+
+# Home Manager 配置快照
+/home/cloudygirl/config/QtProject.conf
+/home/cloudygirl/config/bluedevilglobalrc
+/home/cloudygirl/config/kglobalshortcutsrc
+/home/cloudygirl/config/kscreenlockerrc
+/home/cloudygirl/config/kwinrc
+/home/cloudygirl/config/plasmashellrc
+/home/cloudygirl/config/noctalia/config.toml
+/home/cloudygirl/config/noctalia/settings.toml
+/home/cloudygirl/config/google-chrome/
+/home/cloudygirl/config/chromium/
+/home/cloudygirl/config/BraveSoftware/
+/home/cloudygirl/config/mozilla/
+/home/cloudygirl/config/QQ/
+/home/cloudygirl/config/Code/
+/home/cloudygirl/config/Codex/
+/home/cloudygirl/config/gtk-3.0/bookmarks
+/home/cloudygirl/config/gtk-4.0/bookmarks
+/home/cloudygirl/config/session/
+/home/cloudygirl/config/ksmserverrc
+/home/cloudygirl/config/kactivitymanagerd*
+/home/cloudygirl/config/plasma-org.kde.plasma.desktop-appletsrc
+/home/cloudygirl/config/recently-used.xbel

@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 let
-  loginBackground = ./assets/login-bg.jpg;
+  loginBackground = ../../assets/login-bg.jpg;
 
   animeSddmTheme = (pkgs.sddm-astronaut.override {
     embeddedTheme = "japanese_aesthetic";

@@ -37,7 +37,7 @@ make clean
 - 中文字体：TeX Live 自带 `Fandol` 字体集，由 `ctexart` 的 `fontset=fandol` 接管。
 - 代码字体：`JetBrainsMono Nerd Font`
 
-这些字体由仓库根目录的 `fonts.nix` 管理。
+这些字体由 `devices/nixos/fonts.nix` 管理。
 
 ## Eisvogel
 

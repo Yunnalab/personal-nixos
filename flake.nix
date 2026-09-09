@@ -25,9 +25,9 @@
         specialArgs = { inherit noctalia zen-browser; };
         modules = [
           home-manager.nixosModules.home-manager
-          ./configuration.nix
-          ./fonts.nix
-          ./software
+          ./devices/nixos/configuration.nix
+          ./devices/nixos/fonts.nix
+          ./home/cloudygirl
         ];
       };
     };
