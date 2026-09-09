@@ -3,6 +3,7 @@ spawn-at-startup "systemctl" "--user" "import-environment" "DISPLAY" "WAYLAND_DI
 spawn-at-startup "systemctl" "--user" "start" "polkit-kde-agent.service"
 spawn-at-startup "clash-verge"
 spawn-at-startup "kitty"
+spawn-at-startup "swaync"
 spawn-at-startup "noctalia"
 
 prefer-no-csd

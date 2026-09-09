@@ -13,6 +13,8 @@ in
     dsh-web-launch
     swaylock-effects
     swayidle
+    swaync          # 通知守护进程：swaync（配合 libnotify 的 notify-send）
+    libnotify       # notify-send：opencode ding 插件弹系统通知用
     cmatrix
   ]);
 
