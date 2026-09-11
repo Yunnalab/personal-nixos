@@ -103,6 +103,7 @@ in
     # ── AI ──
     codex
     opencode
+    pi-coding-agent
     opencode-desktop
     mcp-nixos
     github-mcp-server
