@@ -38,7 +38,7 @@ id_ed25519
 /windows/
 /download/
 /watt/
-/anki
+/anki/
 /anki/*.json
 /anki/*.apkg
 /anki/*.colpkg
