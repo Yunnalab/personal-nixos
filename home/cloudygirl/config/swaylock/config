@@ -1,5 +1,7 @@
 # 锁屏视觉效果
-effect=bloom
+# 注意：这里只能写 effect-blur / effect-pixelate / effect-scale / effect-greyscale /
+# effect-vignette / effect-custom。写成 effect=bloom 这种“歧义选项”会让配置从该行
+# 起整段失效（只剩白底默认圆环），并触发 swaylock-effects 的参数解析越界 bug。
 effect-scale=1.0
 effect-blur=20x3
 

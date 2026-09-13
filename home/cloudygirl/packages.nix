@@ -11,9 +11,7 @@ in
     kitty
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     dsh-web-launch
-    swaylock-effects
-    swayidle
-    swaynotificationcenter # 通知守护进程 swaync（配合 libnotify 的 notify-send）
+    swaylock-effects # 备用锁屏：平时由 Noctalia 锁屏，仅在需要时手动调用
     libnotify       # notify-send：opencode ding 插件弹系统通知用
     cmatrix
   ]);

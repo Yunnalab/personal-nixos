@@ -3,8 +3,7 @@ spawn-at-startup "systemctl" "--user" "import-environment" "DISPLAY" "WAYLAND_DI
 spawn-at-startup "systemctl" "--user" "start" "polkit-kde-agent.service"
 spawn-at-startup "clash-verge"
 spawn-at-startup "kitty"
-spawn-at-startup "swaync"
-spawn-at-startup "noctalia"
+// noctalia 由 noctalia.service 启动，避免两边重复启动、抢单例（曾导致该服务 start-limit-hit 失败）
 
 prefer-no-csd
 
@@ -213,7 +212,7 @@ binds {
     Print { spawn "flameshot" "gui"; }
     Ctrl+Alt+A { spawn-sh "grim -g \"$(slurp)\" -t png - | wl-copy -t image/png"; }
 
-    Mod+L allow-when-locked=true { spawn-sh "swaylock -f"; }
+    Mod+L { spawn-sh "noctalia msg session lock"; }
     Mod+Period { spawn-sh "kitty --class cmatrix -e cmatrix"; }
 
     XF86AudioMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
