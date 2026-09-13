@@ -16,8 +16,8 @@ bs-hl-color=ef5350ee
 font=monospace
 font-size=14
 text-color=eebb99ee
-text-ver-align=bottom
-text-inside-ver-align=top
+# 注意：swaylock-effects 1.7.0.0 没有 text-ver-align / text-inside-ver-align 这两个选项
+# （写了会让以下所有配置失效），不再设置文字对齐。
 
 # 输入框
 inside-ver-color=1a1aadbbee
