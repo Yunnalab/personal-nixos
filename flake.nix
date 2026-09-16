@@ -2,9 +2,10 @@
   description = "NixOS configuration for nixos";
 
   inputs = {
-    # 固定到 Qt 6.11.1 的 commit（避免 Qt 6.11.2 导致 SDDM Wayland greeter 键盘失灵的回归）。
-    # 待 Qt 6.11.3 / nixpkgs 修复后可恢复为 nixos-unstable。
-    nixpkgs.url = "github:NixOS/nixpkgs/0e251e24a4f24e036a084b6b4b2d2491af4167f4";
+    # 跟随 nixos-unstable。
+    # 注：登录界面键盘失灵与 Qt/SDDM 无关（曾误判为 Qt 6.11.2），真因是内核
+    # 6.18.52 的 hid-asus 回归，见 devices/nixos/hardware-tweaks.nix 里的说明。
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";

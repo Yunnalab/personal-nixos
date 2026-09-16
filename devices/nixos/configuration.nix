@@ -16,7 +16,6 @@
     ./power.nix
     ../../modules/proxy.nix
     ../../modules/users.nix
-    ./sddm-theme.nix
     ../../modules/docker-setting.nix
     ../../modules/shell.nix
     ../../modules/steam.nix

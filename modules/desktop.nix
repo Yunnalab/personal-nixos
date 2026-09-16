@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   # 文件管理器的图形提权、磁盘挂载和缩略图支持。
@@ -13,8 +13,8 @@
     NIXOS_OZONE_WL = "1";
   };
 
-  # 桌面栈：Plasma 作为应急备用桌面，Niri为主桌面，SDDM 是显示管理器，掌管登录界面
-  # SDDM 主题细节放在 sddm-theme.nix。
+  # 桌面栈：Plasma 作为应急备用桌面，Niri 为主桌面。
+  # 登录界面使用 greetd + tuigreet（见文件末尾），不再使用 SDDM。
   services.xserver.enable = true;
   services.desktopManager.plasma6.enable = true;
   environment.plasma6.excludePackages = with pkgs.kdePackages; [
@@ -24,7 +24,28 @@
 
   # niri 为主桌面：明确默认会话，避免与 plasma6 的 defaultSession 冲突
   services.displayManager.defaultSession = lib.mkForce "niri";
-  services.displayManager.sddm.enable = true;
+
+  # ── 登录管理器：greetd + tuigreet ──
+  # 替代 SDDM：终端 TUI 登录界面，整条依赖里没有 Qt。
+  # 会话列表由 services.displayManager.sessionData 提供（niri、plasma 都已注册）。
+  services.greetd = {
+    enable = true;
+
+    # TUI greeter 必须开启：把 greetd 的 stdin/stdout 接到 tty1，避免启动日志糊在界面上
+    useTextGreeter = true;
+
+    settings.default_session.command = lib.concatStringsSep " " [
+      "${pkgs.tuigreet}/bin/tuigreet"
+      "--time"
+      "--user" "cloudygirl"   # 预填用户名：登录时直接回车 → 输密码
+      "--remember"            # 兜底：记住上次成功登录的用户名
+      "--remember-session"    # 记住上次选择的会话
+      "--asterisks"
+      "--greeting" (lib.escapeShellArg "Welcome back")
+      "--sessions" "${config.services.displayManager.sessionData.desktops}/share/wayland-sessions"
+      "--xsessions" "${config.services.displayManager.sessionData.desktops}/share/xsessions"
+    ];
+  };
 
   services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
 
