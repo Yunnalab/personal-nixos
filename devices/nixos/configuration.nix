@@ -9,6 +9,7 @@
     ../../modules/locale.nix
     ../../modules/networking.nix
     ./nvidia.nix
+    ./fan-mode.nix
     ../../modules/nix-settings.nix
     ../../modules/packages.nix
     ../../modules/qq-fix.nix
