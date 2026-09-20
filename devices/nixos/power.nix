@@ -30,13 +30,28 @@ let
         echo "电池供电：不持有抑制锁"
         exit 0
       fi
-      echo "交流供电：持有 sleep 抑制锁，挂起请求将被拒绝"
-      exec systemd-inhibit \
-        --what=sleep \
-        --who=ac-power-inhibit \
-        --why="交流供电，按策略不挂起" \
-        --mode=block \
-        sleep infinity
+
+      # resume 刚结束的瞬间 logind 还在收尾上一轮 sleep 操作，会以
+      #   Failed to inhibit: The operation inhibition has been requested
+      #   for is already running
+      # 拒绝新的抑制锁（实测 11:43:49 出现过）。若此时直接放弃，后续又恰好
+      # 没有新的 udev 事件，就会永久失去抑制锁，所以这里重试。
+      tries=0
+      while [ "$tries" -lt 20 ]; do
+        if systemd-inhibit \
+             --what=sleep \
+             --who=ac-power-inhibit \
+             --why="交流供电，按策略不挂起" \
+             --mode=block \
+             sleep infinity; then
+          exit 0
+        fi
+        tries=$((tries + 1))
+        sleep 1
+      done
+
+      echo "20 次重试后仍无法获取抑制锁" >&2
+      exit 1
     '';
   };
 in
@@ -122,10 +137,22 @@ in
     HandleLidSwitch = "suspend";
     HandleLidSwitchExternalPower = "lock";
     HandleLidSwitchDocked = "lock";
+
+    # ⚠️ LidSwitchIgnoreInhibited 默认为 yes，会让 logind 处理合盖时
+    # 完全无视 high-level（"sleep"/"idle"）抑制锁。实测：ac-power-inhibit
+    # 持有 --what=sleep --mode=block 时，systemctl suspend 会被拒，
+    # 但合盖依旧照样挂起。设为 no 后，手段二的抑制锁才对合盖生效。
+    # （低层抑制锁 handle-lid-switch 无论此值如何都始终被尊重。）
+    LidSwitchIgnoreInhibited = "no";
   };
 
   # 手段二：交流供电时用抑制锁兜底，覆盖合盖、空闲、手动在内的全部挂起来源。
   # 挂起失败在 Noctalia 侧只记一条 warning，不会弹错误通知。
+  # ⚠️ 合盖路径能生效的前提是上面 LidSwitchIgnoreInhibited = "no"。
+  # ⚠️ logind 只在启动（或收到 SIGHUP）时读 logind.conf，改完必须
+  #    重新加载才生效：sudo systemctl reload systemd-logind
+  #    （man systemd-logind: SIGHUP - Reloads the service configuration file；
+  #     不影响已有会话，比重启 logind/重启机器温和。）
   systemd.services.ac-power-inhibit = {
     description = "交流供电期间持有 logind sleep 抑制锁";
     wantedBy = [ "multi-user.target" ];
