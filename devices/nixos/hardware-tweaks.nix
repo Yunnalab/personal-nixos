@@ -13,19 +13,23 @@ let
   backlightRestore = pkgs.writeShellApplication {
     name = "backlight-restore-after-resume";
     runtimeInputs = [
-      pkgs.systemd
+      pkgs.util-linux
       pkgs.coreutils
       pkgs.gnugrep
     ];
     text = ''
-      sleep 2
       dev=/sys/class/backlight/nvidia_wmi_ec_backlight
       [ -w "$dev/brightness" ] || exit 0
 
-      if ! journalctl -k -b --since "-2min" 2>/dev/null | grep -qE "ECLV|AE_AML_LOOP_TIMEOUT"; then
+      # ⚠️ 不要用 journalctl 查：实测它每次唤醒读 51MB 日志、耗 2.2s，
+      # 正好碰在用户输密码的时候。dmesg 读的是内核环形缓冲区，代价极低，
+      # 正常唤醒几十毫秒就退出。
+      if ! dmesg | grep -qE "ECLV|AE_AML_LOOP_TIMEOUT"; then
         exit 0
       fi
 
+      # 确认是 EC 挂了，才等一下让 EC 缓过来
+      sleep 1
       cur="$(cat "$dev/brightness")"
       # 内核 backlight 核心对相同数值会提前返回、不下发给 EC，
       # 所以先写一个不同的值强制触发一次写入，再恢复原值。
