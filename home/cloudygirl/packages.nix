@@ -14,6 +14,7 @@ in
     swaylock-effects # 备用锁屏：平时由 Noctalia 锁屏，仅在需要时手动调用
     libnotify       # notify-send：opencode ding 插件弹系统通知用
     cmatrix
+    mermaid-cli     # pi-markdown-preview 导出 PDF 时把 mermaid 图渲染为矢量图（否则降级为代码块）
   ]);
 
   xdg.dataFile."applications/dsh-web.desktop".text = ''
