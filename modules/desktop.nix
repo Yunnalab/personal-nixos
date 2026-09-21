@@ -25,6 +25,26 @@
   # niri 为主桌面：明确默认会话，避免与 plasma6 的 defaultSession 冲突
   services.displayManager.defaultSession = lib.mkForce "niri";
 
+  # ── 关机不再“假死” ──
+  # 症状：关机时卡在 “Stopping A scrollable-tiling Wayland compositor...”，
+  # 屏幕定格、机器迟迟不断电，只能长按电源键。
+  #
+  # 2026-09-20 21:49 那次关机（journalctl -b -1）就是这样：
+  #   [12519.596] systemd[2613]: Stopping A scrollable-tiling Wayland compositor...
+  #   （之后 51 秒无任何日志，直到用户按电源键）
+  # 内核和 PID1 都还活着（logind 仍在记录合盖事件），说明是 niri 自己
+  # 卡在退出流程，而不是内核挂死。
+  #
+  # systemd 对 Type=notify 的服务默认要等 DefaultTimeoutStopSec=90s 才会
+  # SIGKILL，于是表现为“死机”。niri 正常退出只要 ~0.3s（对比 -2/-6 两次
+  # 干净关机），所以给它一个短超时：10s 内没退就直接杀掉，关机流程继续。
+  systemd.user.services.niri.serviceConfig = {
+    TimeoutStopSec = 10;
+  };
+
+  # 兜底：用户会话里任何一个 unit 卡住，最多拖 20s，不会再出现分钟级的假死。
+  systemd.user.settings.Manager.DefaultTimeoutStopSec = "20s";
+
   # ── 登录管理器：greetd + tuigreet ──
   # 替代 SDDM：终端 TUI 登录界面，整条依赖里没有 Qt。
   # 会话列表由 services.displayManager.sessionData 提供（niri、plasma 都已注册）。

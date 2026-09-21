@@ -271,3 +271,10 @@ binds {
 	Mod+9 { focus-workspace 9; }
 	Mod+Shift+9 { move-column-to-workspace 9; }
 }
+
+// Noctalia 的 niri 模板写入的主题文件（边框 / 焦点环 / 标签指示器颜色）。
+// Noctalia 只写 ~/.config/niri/noctalia.kdl，不碰本文件；include 路径相对
+// 本文件所在目录（~/.config/niri/）解析。
+// ⚠️ include 的文件不存在时 niri 会直接解析失败、整个会话起不来，
+// 所以 home-manager 激活时会先创建一个空占位文件（见 desktop.nix）。
+include "noctalia.kdl"

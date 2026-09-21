@@ -1,4 +1,4 @@
-{ pkgs, noctalia, ... }:
+{ pkgs, lib, noctalia, ... }:
 
 {
   imports = [ noctalia.homeModules.default ];
@@ -23,6 +23,19 @@
       force = true;
     };
   };
+
+  # niri 的 config.kdl 末尾有一句 `include "noctalia.kdl"`，而 noctalia.kdl 是
+  # Noctalia 在运行时生成/覆盖的（用户可写）。niri 对 include 缺失是硬报错，
+  # 整个会话起不来，所以首次激活时先放一个空占位文件。
+  #
+  # 反过来，config.kdl 本身是 store 里的只读文件：Noctalia 的 niri 模板
+  # （apply.sh）发现 include 已存在就会直接返回，不会再去改 config.kdl。
+  home.activation.ensureNoctaliaNiriKdl = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run mkdir -p "$HOME/.config/niri"
+    if [ ! -e "$HOME/.config/niri/noctalia.kdl" ]; then
+      run touch "$HOME/.config/niri/noctalia.kdl"
+    fi
+  '';
 
   systemd.user.services.polkit-kde-agent = {
     Unit = {
