@@ -7,6 +7,8 @@
     ./mime.nix
     ./desktop.nix
     ./packages.nix
+    ./tmux.nix
+    ./pi-agents.nix
   ];
 
   home.stateVersion = "26.05";

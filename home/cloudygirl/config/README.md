@@ -10,10 +10,12 @@
 | `kitty/kitty.conf` | `home/cloudygirl/desktop.nix` | `~/.config/kitty/kitty.conf` |
 | `noctalia/noctalia-base-settings-v4.json` | `home/cloudygirl/desktop.nix` | `~/.config/noctalia/config.json` |
 | `swaylock/config` | `home/cloudygirl/desktop.nix` | `~/.config/swaylock/config` |
+| `pi/agents/` 中的 scout、builder、reviewer | `home/cloudygirl/pi-agents.nix` | `~/.pi/agent/agents/` |
 | `fcitx5/rime/` 中显式列出的六个文件 | `home/cloudygirl/apps.nix` | `~/.local/share/fcitx5/rime/` |
-| `wps-desktop/` 中的三个桌面入口 | `home/cloudygirl/apps.nix` | `~/.local/share/applications/` |
 
 Thunar 自定义动作由 `home/cloudygirl/apps.nix` 生成；默认打开方式与 KDE/Niri 兼容文件由 `home/cloudygirl/mime.nix` 生成，不使用此目录中的 `mimeapps.list` 快照。DeepSeek 桌面入口由 `home/cloudygirl/packages.nix` 生成。
+
+`pi/agents/` 下的子 agent 定义是只读软链。pi 的 `/subagents` 面板切换 `enabled` 时会直接写回文件，对这些链接会失败；要启停 agent 请改源文件后 rebuild，不要指望面板里的开关能持久化。
 
 ## 未接管快照
 

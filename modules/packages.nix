@@ -78,7 +78,8 @@ in
     home-manager
     nodejs_22
     vscode
-    wpsoffice-cn
+    # LibreOffice：Qt/KDE 集成版（原生 KDE 文件对话框 + Wayland）
+    libreoffice-qt
     helix
     telegram-desktop
 
@@ -94,6 +95,8 @@ in
     sioyek
     pandoc
     texliveFull
+    # pdftotext：lecture-to-notes skill 的 verify_notes.py 用它做脚注同页检查
+    poppler-utils
     calibre
     # anki 已移至 modules/anki-fix.nix（XWayland wrapper，修复 Wayland 下输入法重复）
 

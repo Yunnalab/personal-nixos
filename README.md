@@ -18,9 +18,11 @@ flake.nix                         输入版本与系统组装
 ├── home/cloudygirl/default.nix    NixOS 与 Home Manager 的接入层
 └── home/cloudygirl/home.nix       用户配置入口、会话 PATH、用户兼容版本
     ├── shell.nix                   Fish、Starship、终端工具集成
-    ├── apps.nix                    浏览器、Rime、WPS、Thunar
+    ├── apps.nix                    浏览器、Rime、LibreOffice、Thunar
     ├── mime.nix                    默认打开方式及桌面兼容映射
     ├── desktop.nix                 Noctalia、Niri、Kitty、锁屏与用户服务
+    ├── tmux.nix                    tmux：extended-keys、多 agent 工作台键位与插件
+    ├── pi-agents.nix               pi 子 agent 定义与 agent-farm 启动器
     └── packages.nix                用户软件包与自定义启动器桌面入口
 
 packages/                         自定义包构建函数，不直接设置系统选项

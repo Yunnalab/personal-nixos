@@ -182,8 +182,9 @@ window-rule {
     }
 }
 
+// LibreOffice（含 XWayland 下的 soffice）
 window-rule {
-    match app-id=r#"^(wps|wpp|et|wpsoffice)$"#
+    match app-id=r#"^(soffice|libreoffice.*)$"#
 
     default-column-width { proportion 0.98; }
 }
