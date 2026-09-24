@@ -14,6 +14,8 @@ in
     swaylock-effects # 备用锁屏：平时由 Noctalia 锁屏，仅在需要时手动调用
     libnotify       # notify-send：opencode ding 插件弹系统通知用
     cmatrix
+    eza         # 现代 ls（别名 ll/la/lt，不覆盖 ls 本身）
+    bat         # 现代 cat（别名 bcat，不覆盖 cat 本身）
     mermaid-cli     # pi-markdown-preview 导出 PDF 时把 mermaid 图渲染为矢量图（否则降级为代码块）
   ]);
 
