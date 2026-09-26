@@ -101,6 +101,7 @@ nix-store --realise /nix/store/<hash>-home-manager-files.drv
 readlink ~/.config/eza/theme.yml     # 应指向 /nix/store/...-hm_theme.yml
 
 # Fish 自动列目录 hook：期望 a、b 各列一次，重复 cd 到同一目录不再打印。
+# 超过 50 项的目录只列前 50 项，并打印「… 已省略 N 项（共 M 项，只列前 50）」。
 # 必须用真实 TTY：fish -c 里 status is-interactive 为假，hook 会静默跳过。
 mkdir -p /tmp/eza-hook-check/{a,b} && cd /tmp/eza-hook-check/a \
   && script -qec "fish -i -c 'cd /tmp/eza-hook-check/b; cd /tmp/eza-hook-check/b'" /dev/null

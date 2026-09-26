@@ -13,15 +13,18 @@ let
   eza = flags: "eza " + concat flags;
 in
 {
-  # Fish hook 用：common + git 状态列。
+  # Fish hook 用：common 的等效参数 + 详细视图 + git 状态列。
   #
-  # ⚠️ 已知限制：网格（默认）布局下 --git / --git-repos / --git-repos-no-status 都不显示，
-  #    输出与不带 --git 逐字节相同（已实测）。它只花掉一次 git status 的时间，不做任何可见的事。
-  #    要看 git 标记（-M 已改 / -N 未跟踪）必须换详细视图，把下面这行改成：
-  #      concat (ezaCommon ++ [ "-l" "--no-user" "--no-permissions" "--no-time" "--no-filesize" "--git" ])
-  #    实测这样图标和 -M/-N 都能正常显示，但一行一个条目：本机 /tmp 有 400+ 项、~/nixpkgs
-  #    有上万项，cd 过去会刷屏。默认因此保持紧凑的网格布局。
-  ezaAutoListFlags = concat (ezaCommon ++ [ "--git" ]);
+  # 两个与别名不同、不能换成 --icons=auto 的地方：
+  #   1) git 标记（-M 已改 / -N 未跟踪）只在详细视图里画得出来，网格模式下
+  #      --git / --git-repos / --git-repos-no-status 都不显示（已实测）；
+  #   2) hook 要把输出管道给 head 做 50 条截断，而 eza 的 --color/--icons 看的是
+  #      它自己的 stdout 是不是终端，所以必须写 always，否则管道里会掉色掉图标。
+  # -l + --no-* 只保留名字和 git 标记列，与 --icons=auto 在真终端下渲染一致。
+  ezaAutoListFlags = concat (
+    [ "--group-directories-first" "--icons=always" "--color=always" ]
+    ++ [ "-l" "--no-user" "--no-permissions" "--no-time" "--no-filesize" "--git" ]
+  );
 
   aliases = {
     nixrs = "git -C /home/cloudygirl/nixos add -A && nh os switch";

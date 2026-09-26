@@ -32,7 +32,8 @@ in
 
       # ── 自动列目录 ─────────────────────────────────────────────
       # 进入终端时、以及每次目录变化后自动跑一次 eza。
-      # 参数由 modules/shell-aliases-data.nix 提供，和 ll/la/lt 共用一份定义。
+      # 参数由 modules/shell-aliases-data.nix 提供，和 ll/la/lt 同一处定义。
+      # 超过 50 项只列前 50 项并提示省略了多少；改上限就改下面的 limit。
       # 临时关掉（仅当前会话生效）： set -g EZA_NO_AUTO 1
       __eza_auto_list = ''
         # 只给交互式 shell 用；脚本/管道/命令替换里不打印
@@ -45,7 +46,25 @@ in
         set -g _eza_last_dir "$PWD"
 
         set -q EZA_NO_AUTO; and return 0
-        command eza ${shellData.ezaAutoListFlags}
+
+        set -l limit 50
+        set -l eza_flags ${shellData.ezaAutoListFlags}
+
+        # 先用 ls 数一遍条目数：流式计数，不会把大目录的名字全读进内存。
+        # eza 默认不显示隐藏项，ls 同样不显示，两边口径一致。
+        set -l total (command ls | count)
+
+        # 显式给一个 . ：eza 在 stdin 不是终端时会改从 stdin 读文件名
+        # （FilesInput::deduce），那种情况下不给路径会列出一个空集。
+        # 截断后 eza 会因为管道关闭而以 BrokenPipe 安静退出，不报错。
+        command eza $eza_flags . | head -n $limit
+
+        if test $total -gt $limit
+            # string join 必须加 -- ：$eza_flags 以 --group-directories-first 开头，
+            # 不加的话 fish 会把第一个 flag 当成 string 自己的选项而报错。
+            printf '\n… 已省略 %d 项（共 %d 项，只列前 %d）。看全部：eza %s .\n' \
+                (math $total - $limit) $total $limit (string join ' ' -- $eza_flags)
+        end
       '';
 
       # PWD 变化 → 触发列目录。cd / z / pushd 都会触发。
