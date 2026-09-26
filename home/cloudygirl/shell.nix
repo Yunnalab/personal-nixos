@@ -33,6 +33,7 @@ in
       # ── 自动列目录 ─────────────────────────────────────────────
       # 进入终端时、以及每次目录变化后自动跑一次 eza。
       # 参数由 modules/shell-aliases-data.nix 提供，和 ll/la/lt 同一处定义。
+      # 布局是多列的「详细网格」（--long --grid）：紧凑，且能显示 git 标记列。
       # 超过 50 项只列前 50 项并提示省略了多少；改上限就改下面的 limit。
       # 临时关掉（仅当前会话生效）： set -g EZA_NO_AUTO 1
       __eza_auto_list = ''
@@ -49,17 +50,22 @@ in
 
         set -l limit 50
         set -l eza_flags ${shellData.ezaAutoListFlags}
+        set -l name_flags ${shellData.ezaListNamesFlags}
 
-        # 先用 ls 数一遍条目数：流式计数，不会把大目录的名字全读进内存。
-        # eza 默认不显示隐藏项，ls 同样不显示，两边口径一致。
-        set -l total (command ls | count)
+        # 枚举走 eza 自己，不用 ls：ls 按 locale 排序（file-10 排在 file-2 前），
+        # 截出来的前 50 跟屏幕上 eza 的顺序对不上。两处都要显式给一个 . ，
+        # 因为 eza 在 stdin 不是终端时会改从 stdin 读文件名，不给路径会得到空集。
+        # count 从管道读，只留一个数字，不把大目录的名字全读进内存。
+        set -l total (command eza $name_flags . | count)
 
-        # 显式给一个 . ：eza 在 stdin 不是终端时会改从 stdin 读文件名
-        # （FilesInput::deduce），那种情况下不给路径会列出一个空集。
-        # 截断后 eza 会因为管道关闭而以 BrokenPipe 安静退出，不报错。
-        command eza $eza_flags . | head -n $limit
+        if test $total -le $limit
+            command eza $eza_flags .
+        else
+            # 按条目截断而不是按行：详细网格一行放多个条目，管道给 head 会横切一行。
+            # -d 让目录参数只显示自身而不展开内容；-- 让以 - 开头的文件名不被当选项。
+            set -l names (command eza $name_flags . | head -n $limit)
+            command eza $eza_flags -d -- $names
 
-        if test $total -gt $limit
             # string join 必须加 -- ：$eza_flags 以 --group-directories-first 开头，
             # 不加的话 fish 会把第一个 flag 当成 string 自己的选项而报错。
             printf '\n… 已省略 %d 项（共 %d 项，只列前 %d）。看全部：eza %s .\n' \
