@@ -17,28 +17,19 @@
       # helix：内置模板正常工作。
       builtin_ids = [ "helix" "niri" ];
 
-      # kitty：**不用内置模板**（builtin_ids 里没有 kitty），换成下面这个自定义模板。
+      # kitty：**故意不参与 Noctalia 主题**（builtin_ids 里没有 kitty，也不再加
+      # user.kitty 模板）。kitty 固定使用 config/kitty/kitty.conf 里写死的
+      # Catppuccin Mocha 配色，换壁纸/换配色时完全不动。
       #
-      # 原因：内置模板的 apply.sh 第一步是无条件 `touch ~/.config/kitty/kitty.conf`，
-      # 而该文件是 store 里的只读软链，于是整个 hook 以 exit 1 失败：
-      #   1) 每次换配色都在日志里刷一条“权限不够”；
-      #   2) 失败得太早，后面的 `pkill -USR1 kitty` 根本执行不到，
-      #      已经开着的 kitty 窗口不会重载新配色。
+      # 历史：曾经配过 user.kitty 模板（写 themes/noctalia.conf + pkill -USR1）。
+      # 它有两个问题：内置模板的 apply.sh 会无条件 `touch` store 里的只读
+      # kitty.conf 从而 exit 1；自定义模板虽绕开了这点，但换配色时 kitty 的配色
+      # 会跟着 Noctalia 一起变，不符合“终端保持固定配色”的用法。
       #
-      # 自定义模板只保留内置模板真正有用的部分（渲染颜色到 themes/noctalia.conf
-      # + 通知 kitty 重载）。include 那一行已经写死在 config/kitty/kitty.conf 里，
-      # 不需要任何 hook 去改 kitty.conf。
-      #
-      # 字段对照 ~/.config/noctalia 文档与 Noctalia 自带的 builtin.toml：
-      #   [templates.kitty]
-      #   input_path  = "./kitty/kitty.conf"
-      #   output_path = "$XDG_CONFIG_HOME/kitty/themes/noctalia.conf"
-      #   post_hook   = "bash '{{ config_dir }}/kitty/apply.sh'"
-      user.kitty = {
-        input_path = "${config.programs.noctalia.package}/share/noctalia/assets/templates/kitty/kitty.conf";
-        output_path = "$XDG_CONFIG_HOME/kitty/themes/noctalia.conf";
-        post_hook = "pkill -USR1 -x kitty || true";
-      };
+      # 注意：Noctalia 的 user 模板只从**主 config**（本文件生成的 config.toml）
+      # 读取，运行时的 ~/.local/state/noctalia/settings.toml 覆盖不了它，
+      # 所以必须在这里删掉，不能只在 GUI/settings.toml 里关。
+      # builtin_ids 保持 [ "helix" "niri" ]，不要加 "kitty"。
     };
   };
 
@@ -56,6 +47,10 @@
       source = ./config/kitty/kitty.conf;
       force = true;
     };
+    # eza 主题：文件必须叫 theme.yml，eza 只从这个固定路径读取。
+    # 注意 LS_COLORS / EZA_COLORS 优先级高于 theme.yml；当前 shell 两者都为空，
+    # 所以这份主题会直接生效。换主题 = 换 config/eza/theme.yml 的内容。
+    "eza/theme.yml".source = ./config/eza/theme.yml;
   };
 
   # niri 的 config.kdl 末尾有一句 `include "noctalia.kdl"`，而 noctalia.kdl 是

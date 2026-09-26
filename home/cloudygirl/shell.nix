@@ -12,6 +12,9 @@ in
       set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
       set -gx FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
       set -gx FZF_ALT_C_COMMAND "fd --type d --hidden --follow --exclude .git"
+
+      # 初次进入终端时先列一次当前目录；之后的目录切换由 __eza_on_cd 负责。
+      __eza_auto_list
     '';
     functions = {
       restart = ''
@@ -24,6 +27,28 @@ in
         $argv &>/dev/null &
         disown
       '';
+
+      # ── 自动列目录 ─────────────────────────────────────────────
+      # 进入终端时、以及每次目录变化后自动跑一次 eza。
+      # 临时关掉（仅当前会话生效）： set -g EZA_NO_AUTO 1
+      __eza_auto_list = ''
+        # 只给交互式 shell 用；脚本/管道/命令替换里不打印
+        status is-interactive; or return 0
+        set -q EZA_NO_AUTO; and return 0
+        # fish 的 cd 即使目标目录没变也会发 PWD 事件，这里自己去重，
+        # 保证“目录真变了才列”。
+        if set -q _eza_last_dir; and test "$_eza_last_dir" = "$PWD"
+            return 0
+        end
+        set -g _eza_last_dir "$PWD"
+        command eza --git --group-directories-first --icons=auto
+      '';
+
+      # PWD 变化 → 触发列目录。cd / z / pushd 都会触发。
+      __eza_on_cd = {
+        onVariable = "PWD";
+        body = "__eza_auto_list";
+      };
 
       # 终端代理开关：终端不读 KDE 系统代理，需手动设环境变量
       # 用法：proxy on / proxy off / proxy
