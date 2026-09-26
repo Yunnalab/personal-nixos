@@ -1,5 +1,23 @@
-# 来源：https://github.com/eza-community/eza-themes/blob/main/themes/rose-pine.yml
-# Rosé Pine 官方配色，安装位置 ~/.config/eza/theme.yml（由 desktop.nix 的 xdg.configFile 部署）
+# eza 主题（Rosé Pine 官方配色），部署到 ~/.config/eza/theme.yml，映射见 desktop.nix。
+#
+# 上游：     https://github.com/eza-community/eza-themes/blob/21184b5/themes/rose-pine.yml
+# 上游版本： 21184b55bfe34e8473c8160f9de0c03e4f76857f（2026-01-23）
+# 内容校验： sha256 = 3f8e1b93489c04a932490c35ee45642cd184808e3dc1abf4e1b7febc9b3975c7
+#            该值对应下面这行命令的原始输出（不含本注释头），比对一致即上游未漂移。
+#
+# 升级步骤：
+#   curl -fsSL https://raw.githubusercontent.com/eza-community/eza-themes/21184b5/themes/rose-pine.yml \
+#     -o /tmp/rose-pine.yml
+#   sha256sum /tmp/rose-pine.yml                    # 与上面的校验值比对
+#   cat <本文件头部的注释块> /tmp/rose-pine.yml > home/cloudygirl/config/eza/theme.yml
+#   然后更新上面三行（新 commit、新日期、新 sha256）。
+#   换主题只需替换正文并保留注释头；文件必须叫 theme.yml，eza 只认这个路径。
+#
+# ⚠️ 已知限制：这个主题把 81 个颜色写死成 hex，Noctalia 换调色板时 eza 不会跟随，
+#    可能出现与 kitty 撞色。要让 eza 跟着调色板走，得换成用 ANSI 色名
+#    （Blue/Magenta/BrightBlack…）写的 theme.yml——那是另一件事，没做。
+#
+# 另注：LS_COLORS / EZA_COLORS 的优先级高于 theme.yml，本机两者均为空。
 colourful: true
 
 # Colors are in format of:

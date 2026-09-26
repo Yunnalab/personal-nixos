@@ -17,7 +17,7 @@ flake.nix                         输入版本与系统组装
 │   └── sddm-theme.nix             登录主题与背景打包
 ├── home/cloudygirl/default.nix    NixOS 与 Home Manager 的接入层
 └── home/cloudygirl/home.nix       用户配置入口、会话 PATH、用户兼容版本
-    ├── shell.nix                   Fish、Starship、终端工具集成
+    ├── shell.nix                   Fish、Starship、终端工具集成、eza 自动列目录 hook
     ├── apps.nix                    浏览器、Rime、LibreOffice、Thunar
     ├── mime.nix                    默认打开方式及桌面兼容映射
     ├── desktop.nix                 Noctalia、Niri、Kitty、锁屏与用户服务
@@ -54,7 +54,7 @@ scripts/、anki/、download/、watt/、windows/
 | `modules/users.nix` | 本地用户定义 |
 | `modules/shell.nix` | 系统编辑器环境变量与别名模块接入 |
 | `modules/shell-aliases.nix` | 系统 shell 别名配置 |
-| `modules/shell-aliases-data.nix` | 系统 shell 与用户 Fish 共享的纯数据，不是模块 |
+| `modules/shell-aliases-data.nix` | 系统 shell 与用户 Fish 共享的纯数据，不是模块；也是 eza 参数的唯一定义处（别名 `ll`/`la`/`lt` 与 Fish 自动列目录 hook 共用） |
 | `modules/steam.nix` | Steam 启用与字体 |
 | `modules/security/` | AIDE、审计和加固的选项定义与实现 |
 
@@ -75,6 +75,39 @@ scripts/、anki/、download/、watt/、windows/
 
 NixOS 模块与 Home Manager 模块使用不同的选项空间，不要互相直接导入。外部 flake 输入通过 `home/cloudygirl/default.nix` 的 `home-manager.extraSpecialArgs` 传给用户模块，避免依赖外层函数的隐式作用域。
 
+
+## 验证
+
+改完先求值，再切换：
+
+```bash
+sudo nixos-rebuild dry-build --flake /home/cloudygirl/nixos   # 只求值、不切换
+sudo nixos-rebuild switch --flake /home/cloudygirl/nixos
+```
+
+flake 只认已 tracked 的文件：新增文件必须先 `git add`（或走 `nixrs` 别名，它先 `git add -A`），
+否则 dry-build 报 `Path ... is not tracked by Git`。
+
+不切换系统、直接看 Home Manager 会生成什么，从 dry-build 输出里取那行 `home-manager-files.drv`：
+
+```bash
+nix-store --realise /nix/store/<hash>-home-manager-files.drv
+# 返回真实目录，里面就是会被链接到 $HOME 的文件
+```
+
+用户侧两项配置的自检：
+
+```bash
+readlink ~/.config/eza/theme.yml     # 应指向 /nix/store/...-hm_theme.yml
+
+# Fish 自动列目录 hook：期望 a、b 各列一次，重复 cd 到同一目录不再打印。
+# 必须用真实 TTY：fish -c 里 status is-interactive 为假，hook 会静默跳过。
+mkdir -p /tmp/eza-hook-check/{a,b} && cd /tmp/eza-hook-check/a \
+  && script -qec "fish -i -c 'cd /tmp/eza-hook-check/b; cd /tmp/eza-hook-check/b'" /dev/null
+```
+
+`--icons=auto` 由 eza 按终端宽度探测决定是否画图标，不是 `isatty`；`script` 的 pty 没有窗口尺寸时
+不会画图标，这和配置无关，用 `--icons=always` 可确认图标本身正常。
 
 ## 隐私与生成物
 

@@ -10,10 +10,13 @@
 | `kitty/kitty.conf` | `home/cloudygirl/desktop.nix` | `~/.config/kitty/kitty.conf` |
 | `noctalia/noctalia-base-settings-v4.json` | `home/cloudygirl/desktop.nix` | `~/.config/noctalia/config.json` |
 | `swaylock/config` | `home/cloudygirl/desktop.nix` | `~/.config/swaylock/config` |
+| `eza/theme.yml` | `home/cloudygirl/desktop.nix` | `~/.config/eza/theme.yml` |
 | `pi/agents/` 中的 scout、builder、reviewer | `home/cloudygirl/pi-agents.nix` | `~/.pi/agent/agents/` |
 | `fcitx5/rime/` 中显式列出的六个文件 | `home/cloudygirl/apps.nix` | `~/.local/share/fcitx5/rime/` |
 
 Thunar 自定义动作由 `home/cloudygirl/apps.nix` 生成；默认打开方式与 KDE/Niri 兼容文件由 `home/cloudygirl/mime.nix` 生成，不使用此目录中的 `mimeapps.list` 快照。DeepSeek 桌面入口由 `home/cloudygirl/packages.nix` 生成。
+
+`eza/theme.yml` 是从上游 [eza-themes](https://github.com/eza-community/eza-themes) 原样拷贝的第三方主题，不是本地原创：合并冲突时以上游为准，改配色应换主题而不是手改正文。它把颜色写死成 hex，Noctalia 换调色板时 eza 不会跟随——这是已知限制，原因和重新生成命令都写在文件头注释里。
 
 `pi/agents/` 下的子 agent 定义是只读软链。pi 的 `/subagents` 面板切换 `enabled` 时会直接写回文件，对这些链接会失败；要启停 agent 请改源文件后 rebuild，不要指望面板里的开关能持久化。
 

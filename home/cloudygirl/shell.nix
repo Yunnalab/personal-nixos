@@ -1,12 +1,14 @@
 { pkgs, ... }:
 
 let
-  aliases = import ../../modules/shell-aliases-data.nix;
+  # 别名与 eza 参数都取自 modules/shell-aliases-data.nix（与系统 shell 共享的纯数据）。
+  # 不要在本模块里再手写 eza 的 flag。
+  shellData = import ../../modules/shell-aliases-data.nix;
 in
 {
   programs.fish = {
     enable = true;
-    shellAliases = aliases;
+    shellAliases = shellData.aliases;
     interactiveShellInit = ''
       # fzf + fd
       set -gx FZF_DEFAULT_COMMAND "fd --type f --hidden --follow --exclude .git"
@@ -30,18 +32,20 @@ in
 
       # ── 自动列目录 ─────────────────────────────────────────────
       # 进入终端时、以及每次目录变化后自动跑一次 eza。
+      # 参数由 modules/shell-aliases-data.nix 提供，和 ll/la/lt 共用一份定义。
       # 临时关掉（仅当前会话生效）： set -g EZA_NO_AUTO 1
       __eza_auto_list = ''
         # 只给交互式 shell 用；脚本/管道/命令替换里不打印
         status is-interactive; or return 0
-        set -q EZA_NO_AUTO; and return 0
-        # fish 的 cd 即使目标目录没变也会发 PWD 事件，这里自己去重，
-        # 保证“目录真变了才列”。
-        if set -q _eza_last_dir; and test "$_eza_last_dir" = "$PWD"
-            return 0
-        end
+
+        # fish 在 cd 到同一目录时也会发 PWD 事件，所以按「上次处理过的目录」去重。
+        # 这两行必须排在 EZA_NO_AUTO 之前：关闭期间的 cd 也要同步状态，
+        # 否则重新开启后会拿一个过期目录去比对，多列或漏列一次。
+        set -q _eza_last_dir; and test "$_eza_last_dir" = "$PWD"; and return 0
         set -g _eza_last_dir "$PWD"
-        command eza --git --group-directories-first --icons=auto
+
+        set -q EZA_NO_AUTO; and return 0
+        command eza ${shellData.ezaAutoListFlags}
       '';
 
       # PWD 变化 → 触发列目录。cd / z / pushd 都会触发。
