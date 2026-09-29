@@ -31,6 +31,12 @@
       # 所以必须在这里删掉，不能只在 GUI/settings.toml 里关。
       # builtin_ids 保持 [ "helix" "niri" ]，不要加 "kitty"。
     };
+
+    # 登录界面（greetd + noctalia-greeter）同步：换壁纸/配色时由 Shell 调
+    # noctalia-greeter-apply-appearance 推送到 /var/lib/noctalia-greeter/sync.toml。
+    # 免密的 polkit 规则在 nixos/modules/desktop.nix 的 security.polkit.extraConfig。
+    # 没安装 greeter 或 helper 不在 PATH 时这个开关会被忽略。
+    settings.shell.greeter_sync.auto_sync = true;
   };
 
   xdg.configFile = {

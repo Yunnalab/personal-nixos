@@ -14,7 +14,7 @@
   };
 
   # 桌面栈：Plasma 作为应急备用桌面，Niri 为主桌面。
-  # 登录界面使用 greetd + tuigreet（见文件末尾），不再使用 SDDM。
+  # 登录界面使用 greetd + noctalia-greeter（见文件末尾），不再使用 SDDM / tuigreet。
   services.xserver.enable = true;
   services.desktopManager.plasma6.enable = true;
   environment.plasma6.excludePackages = with pkgs.kdePackages; [
@@ -45,26 +45,72 @@
   # 兜底：用户会话里任何一个 unit 卡住，最多拖 20s，不会再出现分钟级的假死。
   systemd.user.settings.Manager.DefaultTimeoutStopSec = "20s";
 
-  # ── 登录管理器：greetd + tuigreet ──
-  # 替代 SDDM：终端 TUI 登录界面，整条依赖里没有 Qt。
-  # 会话列表由 services.displayManager.sessionData 提供（niri、plasma 都已注册）。
+  # ── 登录管理器：greetd + noctalia-greeter ──
+  # 替代 SDDM / tuigreet：图形登录界面，自带 wlroots 合成器跑在 DRM/KMS 上，
+  # 视觉风格与 Noctalia Shell 一致。nixpkgs unstable 已收录该包和模块
+  # （services.displayManager.noctalia-greeter），不需要额外 flake input。
+  # 会话列表：greeter 直接扫 /run/current-system/sw/share/wayland-sessions，
+  # niri / plasma 的 .desktop 都在那里，无需手动指定路径。
+  services.displayManager.noctalia-greeter = {
+    enable = true;
+
+    settings = {
+      session.default = "niri";        # 默认会话（Name= 字段，不是 .desktop 文件名）
+      user.default = "cloudygirl";     # 开机直接进入密码步骤
+
+      # "Synced" = 用 Noctalia Shell 同步过来的配色（sync.toml）。
+      # 还没同步过时 greeter 找不到 "Synced" 配色，会自动退回内置 Noctalia 配色。
+      # ⚠️ 千万不要在 greeter.toml 里写 [appearance.palette]：完整的调色板会
+      #    覆盖同步过来的颜色，同步就只剩壁纸生效了。
+      appearance.scheme = "Synced";
+
+      keyboard.layout = "us";
+      idle.timeout = 300;              # 5 分钟无操作熄灭屏幕，0 = 不熄灭
+
+      # 尺寸：面板 2560x1600 / 350x220mm，按 EDID 算出来的自动缩放≈1.93
+      #（上限 2），所以界面明显偏大。这里只给内屏写死成和 niri 会话一致的 1.25；
+      # 外接显示器不在列表里，仍按各自的 DPI 自动缩放。
+      output.scales = "eDP-1:1.25";
+    };
+
+    # NixOS 上默认游标查找路径（~/.icons、/usr/share/icons）不存在，必须显式给包
+    cursorTheme = {
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Ice";
+    };
+  };
+
+  # ── 登录界面同步所需的 polkit 授权 ──
+  # pkexec 必须用 setuid wrapper（store 里的 pkexec 是 0555，直接调用会报
+  # "pkexec must be setuid root"）；/run/wrappers/bin 在用户 PATH 最前面。
+  security.polkit.enablePkexecWrapper = true;
+
+  # 免密同步：等价于上游新模块的 passwordlessSyncUsers = [ "cloudygirl" ]。
+  # 本机 lock 的 nixpkgs（noctalia-greeter 1.5.0）还没这个选项，所以手写规则。
+  # 只放开这一个动作：调用方是 greeter 的 apply-appearance helper、目标是 root、
+  # 且是本机活跃会话里的 cloudygirl。想恢复「每次弹管理员授权」就删掉本段。
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      var helper = "${config.services.displayManager.noctalia-greeter.package}/bin/noctalia-greeter-apply-appearance";
+      if (action.id == "org.noctalia.greeter.sync-appearance" &&
+          action.lookup("program") == helper &&
+          action.lookup("user") == "root" &&
+          subject.local && subject.active &&
+          subject.user == "cloudygirl") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
+
   services.greetd = {
     enable = true;
 
-    # TUI greeter 必须开启：把 greetd 的 stdin/stdout 接到 tty1，避免启动日志糊在界面上
-    useTextGreeter = true;
-
-    settings.default_session.command = lib.concatStringsSep " " [
-      "${pkgs.tuigreet}/bin/tuigreet"
-      "--time"
-      "--user" "cloudygirl"   # 预填用户名：登录时直接回车 → 输密码
-      "--remember"            # 兜底：记住上次成功登录的用户名
-      "--remember-session"    # 记住上次选择的会话
-      "--asterisks"
-      "--greeting" (lib.escapeShellArg "Welcome back")
-      "--sessions" "${config.services.displayManager.sessionData.desktops}/share/wayland-sessions"
-      "--xsessions" "${config.services.displayManager.sessionData.desktops}/share/xsessions"
-    ];
+    # 注意：noctalia-greeter 是 Wayland greeter（自建合成器，走 logind 拿 DRM 权限），
+    # 不能再开 useTextGreeter —— 那是给 tuigreet 这类 TUI 用的，
+    # 打开会把 greetd 的 stdin/stdout 钉在 tty1 上，图形 greeter 直接起不来。
+    #
+    # 登录界面的配色/壁纸同步开关在 noctalia 那一侧，见
+    # home/cloudygirl/desktop.nix 的 settings.shell.greeter_sync.auto_sync。
   };
 
   services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
