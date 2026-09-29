@@ -17,6 +17,7 @@ in
     eza         # 现代 ls（别名 ll/la/lt，不覆盖 ls 本身）
     bat         # 现代 cat（别名 bcat，不覆盖 cat 本身）
     mermaid-cli     # pi-markdown-preview 导出 PDF 时把 mermaid 图渲染为矢量图（否则降级为代码块）
+    gh              # GitHub CLI：给 noctalia community-palettes 等仓库提 PR 用（gh pr create）
   ]);
 
   xdg.dataFile."applications/dsh-web.desktop".text = ''
