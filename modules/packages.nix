@@ -88,7 +88,7 @@ in
     kdePackages.gwenview
     kdePackages.elisa
     go-musicfox
-    flameshot
+    # 截图改用 niri 自带截图工具（Print / Ctrl+Print / Alt+Print），不再安装 flameshot
 
     # ── 阅读/文档 ──
     marktext

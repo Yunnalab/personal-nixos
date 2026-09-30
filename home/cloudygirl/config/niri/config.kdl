@@ -210,8 +210,13 @@ binds {
     Mod+F { spawn-sh "noctalia msg panel-toggle launcher"; }
     Mod+Escape { spawn-sh "noctalia msg panel-toggle control-center"; }
 
-    Print { spawn "flameshot" "gui"; }
-    Ctrl+Alt+A { spawn-sh "grim -g \"$(slurp)\" -t png - | wl-copy -t image/png"; }
+    // 截图：全部使用 niri 自带截图，不再依赖 flameshot
+    // Print      → 交互式截图 UI：拖框选区域；Space 保存并复制，Ctrl+C 只复制不落盘，P 切换指针
+    // Ctrl+Print → 直接截取聚焦屏幕
+    // Alt+Print  → 直接截取聚焦窗口
+    Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
 
     Mod+L { spawn-sh "noctalia msg session lock"; }
     Mod+Period { spawn-sh "kitty --class cmatrix -e cmatrix"; }
