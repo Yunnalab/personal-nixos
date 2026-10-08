@@ -14,7 +14,7 @@
 | `pi/agents/` 中的 scout、builder、reviewer | `home/cloudygirl/pi-agents.nix` | `~/.pi/agent/agents/` |
 | `fcitx5/rime/` 中显式列出的六个文件 | `home/cloudygirl/apps.nix` | `~/.local/share/fcitx5/rime/` |
 
-Thunar 自定义动作由 `home/cloudygirl/apps.nix` 生成；默认打开方式与 KDE/Niri 兼容文件由 `home/cloudygirl/mime.nix` 生成，不使用此目录中的 `mimeapps.list` 快照。DeepSeek 桌面入口由 `home/cloudygirl/packages.nix` 生成。
+Thunar 自定义动作由 `home/cloudygirl/apps.nix` 生成；默认打开方式与 KDE/Niri 兼容文件由 `home/cloudygirl/mime.nix` 生成，不使用此目录中的 `mimeapps.list` 快照。
 
 `eza/theme.yml` 是从上游 [eza-themes](https://github.com/eza-community/eza-themes) 原样拷贝的第三方主题，不是本地原创：合并冲突时以上游为准，改配色应换主题而不是手改正文。它把颜色写死成 hex，Noctalia 换调色板时 eza 不会跟随——这是已知限制，原因和重新生成命令都写在文件头注释里。
 

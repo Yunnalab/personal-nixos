@@ -58,8 +58,7 @@ scripts/、anki/、download/、watt/、windows/
 | `modules/steam.nix` | Steam 启用与字体 |
 | `modules/security/` | AIDE、审计和加固的选项定义与实现 |
 
-`devices/nixos/configuration.nix` 选择本机安全策略；`modules/security/` 实现这些策略。`modules/deepseek-harness-security.nix` 当前未导入，仅放入目录不会启用它。
-
+`devices/nixos/configuration.nix` 选择本机安全策略；`modules/security/` 实现这些策略。
 `devices/nixos/` 下除通用资源外的配置默认视为本机专属。迁移到其他电脑时，至少重新生成 `hardware-configuration.nix`，并审查 `boot.nix`、`nvidia.nix`、`hardware-tweaks.nix`、`power.nix` 和 `networking.nix` 中的硬件、磁盘 UUID、主机名与端口设置；不要直接复用旧的磁盘或 PRIME 参数。
 
 ## 放在哪里
