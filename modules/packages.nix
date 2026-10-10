@@ -92,7 +92,7 @@ in
 
     # ── 阅读/文档 ──
     marktext
-    sioyek
+    # sioyek 已移至 modules/sioyek-fix.nix（XWayland wrapper，绕开 Qt6 原生 Wayland 下窗口不可见）
     pandoc
     texliveFull
     # pdftotext：lecture-to-notes skill 的 verify_notes.py 用它做脚注同页检查
