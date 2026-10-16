@@ -104,7 +104,7 @@ in
     mpv
 
     # ── AI ──
-    codex
+    chatgpt
     opencode
     pi-coding-agent
     opencode-desktop
