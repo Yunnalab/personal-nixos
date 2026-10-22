@@ -26,6 +26,7 @@ in
     bitwarden-cli
     android-tools
     pnpm
+    actionlint
 
     # ── 版本控制 ──
     git
