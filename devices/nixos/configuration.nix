@@ -12,6 +12,7 @@
     ./fan-mode.nix
     ../../modules/nix-settings.nix
     ../../modules/packages.nix
+    ../../modules/nixpkgs-overrides.nix
     ../../modules/pi-material-black-simple.nix
     ../../modules/qq-fix.nix
     ../../modules/anki-fix.nix

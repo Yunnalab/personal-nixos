@@ -136,7 +136,23 @@
     wants = [ "network-online.target" ];
     path = [ pkgs.flatpak ];
     script = ''
-      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      # switch-to-configuration 会先停掉 NetworkManager/resolvconf 再启动本 unit，
+      # 而 network-online.target 早已满足，于是它会在网络空窗期跑并报
+      # "Could not connect to server"，让整次 activation 以 exit 4 失败。
+      # flathub 已登记过就直接跳过；否则重试几次，并直连 dl.flathub.org（省掉 301 跳转）。
+      if flatpak remotes --system --columns=name | grep -qx flathub; then
+        echo "flathub remote already configured, skipping"
+        exit 0
+      fi
+      for i in 1 2 3 4 5; do
+        if flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo; then
+          exit 0
+        fi
+        echo "flathub remote-add attempt $i failed, retrying in 5s..." >&2
+        sleep 5
+      done
+      echo "flathub remote-add failed after 5 attempts" >&2
+      exit 1
     '';
     serviceConfig = {
       Type = "oneshot";
