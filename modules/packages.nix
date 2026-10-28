@@ -32,6 +32,7 @@ in
     git
     gnumake
     tmux
+    git-lfs
 
     # ── 自定义脚本 ──
     mdpdf
