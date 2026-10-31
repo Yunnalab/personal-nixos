@@ -8,8 +8,7 @@ let
   thunar = "thunar.desktop";
   gwenview = "org.kde.gwenview.desktop";
   ark = "org.kde.ark.desktop";
-  haruna = "org.kde.haruna.desktop";
-  elisa = "org.kde.elisa.desktop";
+  mpv = "mpv.desktop";
   marktext = "marktext.desktop";
   sioyek = "sioyek.desktop";
   writer = "writer.desktop";
@@ -104,8 +103,8 @@ let
   // genAttrs codeTypes (_: code)
   // genAttrs imageTypes (_: gwenview)
   // genAttrs archiveTypes (_: ark)
-  // genAttrs audioTypes (_: elisa)
-  // genAttrs videoTypes (_: haruna);
+  // genAttrs audioTypes (_: mpv)
+  // genAttrs videoTypes (_: mpv);
 in
 {
   xdg.configFile."kde-mimeapps.list".source =

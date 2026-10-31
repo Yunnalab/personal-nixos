@@ -23,7 +23,6 @@ in
     wget
     procps
     fastfetch
-    bitwarden-cli
     android-tools
     pnpm
     actionlint
@@ -88,7 +87,6 @@ in
     # ── 多媒体 ──
     ffmpeg
     kdePackages.gwenview
-    kdePackages.elisa
     go-musicfox
     # 截图改用 niri 自带截图工具（Print / Ctrl+Print / Alt+Print），不再安装 flameshot
 
@@ -106,7 +104,6 @@ in
     mpv
 
     # ── AI ──
-    chatgpt
     opencode
     pi-coding-agent
     opencode-desktop
@@ -124,8 +121,6 @@ in
     lunar-client
     wl-clipboard
     cliphist
-    qalculate-qt
-    geary
     goldendict-ng
     kdePackages.ark
     p7zip

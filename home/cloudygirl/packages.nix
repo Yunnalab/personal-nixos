@@ -1,4 +1,4 @@
-{ lib, pkgs, zen-browser, ... }:
+{ lib, pkgs, ... }:
 
 {
   # 保持这些显式安装的包位于程序模块自动添加的包之后。
@@ -6,7 +6,6 @@
     xwayland-satellite
     btop
     kitty
-    zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     swaylock-effects # 备用锁屏：平时由 Noctalia 锁屏，仅在需要时手动调用
     libnotify       # notify-send：opencode ding 插件弹系统通知用
     cmatrix

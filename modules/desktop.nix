@@ -127,36 +127,7 @@
     pavucontrol    # 图形化音量控制，可切换输出设备
   ];
 
-  # Flatpak 支持和 Flathub 远程仓库自动配置。
-  services.flatpak.enable = true;
-  systemd.services.flatpak-add-flathub = {
-    description = "Add Flathub remote for Flatpak";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    path = [ pkgs.flatpak ];
-    script = ''
-      # switch-to-configuration 会先停掉 NetworkManager/resolvconf 再启动本 unit，
-      # 而 network-online.target 早已满足，于是它会在网络空窗期跑并报
-      # "Could not connect to server"，让整次 activation 以 exit 4 失败。
-      # flathub 已登记过就直接跳过；否则重试几次，并直连 dl.flathub.org（省掉 301 跳转）。
-      if flatpak remotes --system --columns=name | grep -qx flathub; then
-        echo "flathub remote already configured, skipping"
-        exit 0
-      fi
-      for i in 1 2 3 4 5; do
-        if flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo; then
-          exit 0
-        fi
-        echo "flathub remote-add attempt $i failed, retrying in 5s..." >&2
-        sleep 5
-      done
-      echo "flathub remote-add failed after 5 attempts" >&2
-      exit 1
-    '';
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-  };
+  # Flatpak 已移除（2026-10）：原先的三个 flatpak 应用（Git Cola、
+  # GitHub Desktop、Qalculate GTK）与 nix 里的 git / gh / qalculate-qt 重复，
+  # 且 runtime 占 2.1G。flatpak 本身及其 /var/lib/flatpak 已一并删除。
 }

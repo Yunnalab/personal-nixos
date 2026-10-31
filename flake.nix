@@ -13,17 +13,13 @@
     noctalia = {
       url = "github:noctalia-dev/noctalia/cachix";
     };
-
-    zen-browser = {
-      url = "github:0xc000022070/zen-browser-flake";
-    };
   };
 
-  outputs = { self, nixpkgs, home-manager, noctalia, zen-browser, ... }:
+  outputs = { self, nixpkgs, home-manager, noctalia, ... }:
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit noctalia zen-browser; };
+        specialArgs = { inherit noctalia; };
         modules = [
           home-manager.nixosModules.home-manager
           ./devices/nixos/configuration.nix

@@ -1,10 +1,10 @@
-{ noctalia, zen-browser, ... }:
+{ noctalia, ... }:
 
 {
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    extraSpecialArgs = { inherit noctalia zen-browser; };
+    extraSpecialArgs = { inherit noctalia; };
     users.cloudygirl = import ./home.nix;
     backupFileExtension = ".bak";
   };
