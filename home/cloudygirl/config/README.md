@@ -22,7 +22,7 @@ Thunar 自定义动作由 `home/cloudygirl/apps.nix` 生成；默认打开方式
 
 ## 未接管快照
 
-未被模块显式引用的 Noctalia、Fcitx5、KDE/Qt、GTK、Fontconfig、XSettings、Glow、Sioyek 等配置仅作为快照保存，不自动部署。Noctalia 当前使用 JSON 源文件，不存在按状态栏、Dock 等拆分的 Nix 子模块。
+未被模块显式引用的 Noctalia、Fcitx5、KDE/Qt、GTK、Fontconfig、XSettings、Glow 等配置仅作为快照保存，不自动部署。Noctalia 当前使用 JSON 源文件，不存在按状态栏、Dock 等拆分的 Nix 子模块。
 
 含文件选择历史、设备或活动标识、本机路径的 Qt、蓝牙、KWin、Plasma 和旧 Noctalia TOML 快照已列入 `.gitignore`，仅保留本地副本。正在部署的 Noctalia JSON、Niri 等源配置仍被保留；它们含有本机设置，不代表已经匿名化。
 

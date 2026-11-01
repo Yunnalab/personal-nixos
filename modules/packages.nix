@@ -92,7 +92,9 @@ in
 
     # ── 阅读/文档 ──
     marktext
-    # sioyek 已移至 modules/sioyek-fix.nix（XWayland wrapper，绕开 Qt6 原生 Wayland 下窗口不可见）
+    # PDF 主力阅读器。plasma6 模块本来就会带上它，这里显式声明以免日后被
+    # excludePackages 波及而悄悄消失（mime.nix 把 application/pdf 指向它）
+    kdePackages.okular
     pandoc
     texliveFull
     # pdftotext：lecture-to-notes skill 的 verify_notes.py 用它做脚注同页检查

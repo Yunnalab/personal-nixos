@@ -15,7 +15,6 @@
     ../../modules/nixpkgs-overrides.nix
     ../../modules/qq-fix.nix
     ../../modules/anki-fix.nix
-    ../../modules/sioyek-fix.nix
     ./power.nix
     ../../modules/proxy.nix
     ../../modules/users.nix

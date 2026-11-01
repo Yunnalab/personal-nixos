@@ -83,6 +83,7 @@ scripts/、anki/、download/、windows/
 | `chatgpt` + `apps.nix` 的 `chatgptProxy` wrapper | 无任何用户配置残留；已由 `pi`/`opencode`/`codex` 覆盖 |
 | `elisa`、`qalculate-qt`、`bitwarden-cli` | 从未启动或 3.5 个月未用 |
 | `assets/login-bg.jpg` | SDDM 时代的登录背景，改用 greetd + noctalia-greeter 后无引用 |
+| `sioyek` + `modules/sioyek-fix.nix`（2026-11-01） | 本机 PRIME offload + NVIDIA 环境下 Qt6/QtQuick 的 GL 上下文反复创建失败（`QOpenGLWidget: Failed to create context` / `QEGLPlatformContext: Failed to create context: 3009`），窗口能创建但从不提交缓冲区；xcb/wayland 两种后端只能交替幸存，无法长期保持。PDF 默认改为 Okular（`kdePackages.okular`），次选 calibre-ebook-viewer |
 
 NixOS 模块与 Home Manager 模块使用不同的选项空间，不要互相直接导入。外部 flake 输入通过 `home/cloudygirl/default.nix` 的 `home-manager.extraSpecialArgs` 传给用户模块，避免依赖外层函数的隐式作用域。
 

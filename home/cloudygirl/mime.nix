@@ -10,7 +10,7 @@ let
   ark = "org.kde.ark.desktop";
   mpv = "mpv.desktop";
   marktext = "marktext.desktop";
-  sioyek = "sioyek.desktop";
+  okularPdf = "okularApplication_pdf.desktop";
   writer = "writer.desktop";
   calc = "calc.desktop";
   impress = "impress.desktop";
@@ -75,7 +75,9 @@ let
     "inode/directory" = thunar;
     "text/markdown" = marktext;
     "text/x-markdown" = marktext;
-    "application/pdf" = sioyek;
+    # PDF 默认用 Okular：sioyek 2026-11-01 已移除（Qt6/QtQuick 的 GL 上下文
+    # 在本机 PRIME offload + NVIDIA 环境下反复失效，窗口不提交缓冲区）
+    "application/pdf" = okularPdf;
     "application/msword" = writer;
     "application/vnd.ms-word" = writer;
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = writer;
@@ -120,7 +122,7 @@ in
     enable = true;
     associations.added = mimeDefaults // {
       "inode/directory" = thunar;
-      "application/pdf" = [ sioyek "okularApplication_pdf.desktop" ];
+      "application/pdf" = [ okularPdf "calibre-ebook-viewer.desktop" ];
       "image/png" = [ gwenview "okularApplication_kimgio.desktop" chrome ];
       "image/jpeg" = [ gwenview "okularApplication_kimgio.desktop" chrome ];
       "text/markdown" = [ marktext "okularApplication_md.desktop" code ];
