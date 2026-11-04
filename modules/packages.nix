@@ -106,9 +106,8 @@ in
     mpv
 
     # ── AI ──
-    opencode
+    chatgpt
     pi-coding-agent
-    opencode-desktop
     mcp-nixos
     github-mcp-server
 
