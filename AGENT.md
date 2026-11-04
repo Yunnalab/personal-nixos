@@ -19,6 +19,7 @@ flake.nix                         输入版本与系统组装
 └── home/cloudygirl/home.nix       用户配置入口、会话 PATH、用户兼容版本
     ├── shell.nix                   Fish、Starship、终端工具集成、eza 自动列目录 hook
     ├── apps.nix                    浏览器、Rime、LibreOffice、Thunar
+    ├── chatgpt-proxy.nix           ChatGPT 走 Clash 代理的启动入口（与直连入口并存）
     ├── mime.nix                    默认打开方式及桌面兼容映射
     ├── desktop.nix                 Noctalia、Niri、Kitty、锁屏与用户服务
     ├── tmux.nix                    tmux：extended-keys、多 agent 工作台键位与插件
@@ -73,19 +74,36 @@ scripts/、anki/、download/、windows/
 
 ### 已移除的组件（勿回加）
 
-以下是 2026-10-31 按“长期未使用”清理掉的，不要因为看到旧文档或旧缓存就重新引入：
+以下是 2026-10-31 按“长期未使用”清理掉的，不要因为看到旧文档或旧缓存就重新引入（`chatgpt` 当时也在表内，2026-11-04 已重新安装，见下节「ChatGPT 的两个启动入口」）：
 
 | 组件 | 原因 |
 | --- | --- |
 | Flatpak（含 `/var/lib/flatpak`、Flathub 加源 unit） | 三个 flatpak 应用与 nix 里的 `git`/`gh`/`qalculate-qt` 重复，runtime 占 2.1G |
 | Zen Browser（flake input） | 一个月未启动，日常用 Chrome |
 | `geary` | 邮件客户端，3 个月未打开 |
-| `chatgpt` + `apps.nix` 的 `chatgptProxy` wrapper | 无任何用户配置残留；已由 `pi`/`opencode`/`codex` 覆盖 |
 | `elisa`、`qalculate-qt`、`bitwarden-cli` | 从未启动或 3.5 个月未用 |
 | `assets/login-bg.jpg` | SDDM 时代的登录背景，改用 greetd + noctalia-greeter 后无引用 |
 | `sioyek` + `modules/sioyek-fix.nix`（2026-11-01） | 本机 PRIME offload + NVIDIA 环境下 Qt6/QtQuick 的 GL 上下文反复创建失败（`QOpenGLWidget: Failed to create context` / `QEGLPlatformContext: Failed to create context: 3009`），窗口能创建但从不提交缓冲区；xcb/wayland 两种后端只能交替幸存，无法长期保持。PDF 默认改为 Okular（`kdePackages.okular`），次选 calibre-ebook-viewer |
 
 NixOS 模块与 Home Manager 模块使用不同的选项空间，不要互相直接导入。外部 flake 输入通过 `home/cloudygirl/default.nix` 的 `home-manager.extraSpecialArgs` 传给用户模块，避免依赖外层函数的隐式作用域。
+
+### ChatGPT 的两个启动入口（2026-11-04）
+
+`chatgpt` 本体装在 `modules/packages.nix`，由 `home/cloudygirl/chatgpt-proxy.nix` 额外提供一个**独立**的代理入口，两个条目在应用面板并存：
+
+| 面板条目 | 来源 | 网络 |
+| --- | --- | --- |
+| `ChatGPT` | 包自带 `chatgpt.desktop` | 直连 |
+| `ChatGPT（Clash 代理）` | `xdg.desktopEntries."chatgpt-proxy"` → `~/.local/share/applications/chatgpt-proxy.desktop` | `127.0.0.1:7897` |
+
+旧的 `apps.nix` `chatgptProxy` wrapper 用同名 `chatgpt` 命令**遮蔽**系统命令，导致所有入口（含 MIME 关联、终端调用）都强制走代理，已不再使用。现在直连路径保持原样，代理只由新条目显式选择。
+
+两个必须知道的实现约束，改这个模块前先看：
+
+1. **单实例锁**：ChatGPT 是 Electron 单实例应用（`requestSingleInstanceLock`），已有实例在跑时新进程只把旧窗口唤到前台就退出，`--proxy-server` 不会生效。所以 `chatgpt-proxy` 先判断旧实例是否走代理，没走就 `systemctl --user stop` 对应 scope + `pkill`，等锁释放后再带代理启动。
+2. **environ 会被清零**：ChatGPT 起来后把自身 `/proc/<pid>/environ` 全部写成 NUL，**不能**用环境变量判断“是否已走代理”。改为读主进程 cmdline（主进程 = cmdline 不含 `--type=` 的那个）里有没有 `--proxy-server=http://127.0.0.1:7897`。
+
+代理入口刻意不声明 `MimeType`，否则会和 `chatgpt.desktop` 抢 `mime.nix` 里的 http/https/codex 默认处理程序。
 
 
 ## 验证
