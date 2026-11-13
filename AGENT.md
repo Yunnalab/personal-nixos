@@ -32,7 +32,7 @@ notes/                            笔记与 Pandoc/XeLaTeX 模板
 scripts/、anki/、download/、windows/
                                   辅助资料或独立工作流，不自动导入系统
 ```
-
+power
 `flake.lock` 锁定 `nixpkgs`、Home Manager 和 Noctalia 及其依赖。设备入口位于 `devices/nixos/`，用户入口位于 `home/cloudygirl/`。
 
 ## 系统模块索引
