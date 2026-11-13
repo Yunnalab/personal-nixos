@@ -100,7 +100,6 @@ in
     # pdftotext：lecture-to-notes skill 的 verify_notes.py 用它做脚注同页检查
     poppler-utils
     calibre
-    timer #终端临时闹钟
     # anki 已移至 modules/anki-fix.nix（XWayland wrapper，修复 Wayland 下输入法重复）
 
     # ── 视频播放 ──
