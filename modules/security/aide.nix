@@ -66,7 +66,7 @@ in
       ${concatStringsSep "\n" cfg.excludedPaths}
     '';
 
-    environment.systemPackages = [ pkgs.aide ];
+    # aide 本体由 modules/packages.nix 的「安全工具」一节安装，这里不重复列。
 
     systemd.services.aide-init = {
       description = "初始化AIDE数据库";

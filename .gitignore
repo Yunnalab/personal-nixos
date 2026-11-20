@@ -37,8 +37,6 @@ id_ed25519
 # 外部个人目录、下载内容与导出数据
 /windows/
 /download/
-/watt/
-/anki/
 /anki/*.json
 /anki/*.apkg
 /anki/*.colpkg
@@ -51,43 +49,6 @@ id_ed25519
 /notes/**/*.fls
 /notes/**/*.fdb_latexmk
 /notes/**/*.synctex.gz
-
-# 未接管的桌面快照可能包含历史记录、设备标识或个人路径
-/software/config/QtProject.conf
-/software/config/bluedevilglobalrc
-/software/config/kglobalshortcutsrc
-/software/config/kscreenlockerrc
-/software/config/kwinrc
-/software/config/plasmashellrc
-/software/config/noctalia/config.toml
-/software/config/noctalia/settings.toml
-
-# 浏览器、聊天软件、编辑器和桌面的运行状态
-/software/config/google-chrome/
-/software/config/chromium/
-/software/config/BraveSoftware/
-/software/config/mozilla/
-/software/config/QQ/
-/software/config/Code/
-/software/config/Codex/
-/software/config/gtk-3.0/bookmarks
-/software/config/gtk-4.0/bookmarks
-/software/config/session/
-/software/config/ksmserverrc
-/software/config/kactivitymanagerd*
-/software/config/plasma-org.kde.plasma.desktop-appletsrc
-/software/config/recently-used.xbel
-/software/config/sioyek/*session*
-/software/config/sioyek/*history*
-/software/config/sioyek/*recent*
-/software/config/sioyek/*.db*
-/software/config/fcitx5/conf/cached_layouts
-/software/config/fcitx5/rime/build/
-/software/config/fcitx5/rime/sync/
-/software/config/fcitx5/rime/*.userdb/
-/software/config/fcitx5/rime/*.userdb.txt
-/software/config/fcitx5/rime/installation.yaml
-/software/config/fcitx5/rime/user.yaml
 
 # 通用缓存、运行日志与编译生成物
 .cache/

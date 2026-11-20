@@ -1,4 +1,4 @@
-# 系统 shell（modules/shell-aliases.nix）与用户 Fish（home/cloudygirl/shell.nix）
+# 系统 shell（modules/shell.nix）与用户 Fish（home/cloudygirl/shell.nix）
 # 共享的纯数据，不是模块。导出两项：
 #   ezaAutoListFlags —— Fish 自动列目录 hook 的参数串（不含 "eza" 前缀，hook 自己拼）
 #   aliases          —— 两边共用的别名表

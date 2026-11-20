@@ -4,7 +4,7 @@
   imports = [
     ./shell.nix
     ./apps.nix
-    ./chatgpt-proxy.nix
+    ../../apps/home
     ./mime.nix
     ./desktop.nix
     ./packages.nix

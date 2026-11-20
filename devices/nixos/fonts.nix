@@ -1,9 +1,8 @@
 { pkgs, ... }:
 {
   fonts = {
-    # when set to true, causes some "basic" fonts to be installed for reasonable
-    # Unicode coverage. Set to true if you are unsure about what languages
-    # you might end up reading.
+    # 设为 true 时会额外装一批「基础」字体，保证常见 Unicode 覆盖面。
+    # 不确定要读哪些语言时保持 true。
     enableDefaultPackages = true;
 
     packages = with pkgs; [
@@ -20,7 +19,7 @@
     ];
 
     fontconfig.defaultFonts = {
-      # Sans serif fonts: prefer Western fonts, then CJK variants, fallback to HanaMin
+      # 无衬线：西文字体优先，其次 CJK，最后回退到 HanaMin
       sansSerif = [
         "Noto Sans"
         "Noto Sans CJK SC"
@@ -30,7 +29,7 @@
         "Noto Color Emoji"
       ];
 
-      # Serif fonts: prefer Western fonts, then CJK variants, fallback to HanaMin
+      # 衬线：西文字体优先，其次 CJK，最后回退到 HanaMin
       serif = [
         "Noto Serif"
         "Noto Serif CJK SC"
@@ -40,14 +39,14 @@
         "Noto Color Emoji"
       ];
 
-      # Monospace fonts: Maple Mono for programming, fallback to Noto Sans Mono
+      # 等宽：编程用 Maple Mono，回退 Noto Sans Mono
       monospace = [
         "Maple Mono NF CN"
         "Noto Sans Mono"
         "Noto Color Emoji"
       ];
 
-      # Emoji font
+      # Emoji 字体
       emoji = [
         "Noto Color Emoji"
       ];

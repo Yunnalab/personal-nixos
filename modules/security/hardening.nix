@@ -1,5 +1,5 @@
 # 系统安全加固
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 
 with lib;
 
@@ -114,12 +114,8 @@ in
       "kernel.sysrq" = false;
     };
 
-    # 安全工具
-    environment.systemPackages = with pkgs; [
-      lynis      # 安全审计
-      nmap       # 网络扫描
-      clamav     # 恶意软件扫描 (lynis建议HRDN-7230)
-    ];
+    # 安全工具统一装在 modules/packages.nix 的「安全工具」一节，
+    # 这里只负责服务、sysctl、PAM 等策略，不再重复列包。
 
     # 登录横幅 (lynis建议BANN-7126)
     environment.etc."issue".text = ''

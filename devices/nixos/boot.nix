@@ -1,4 +1,4 @@
-# MACHINE-SPECIFIC: the Windows EFI UUID below belongs to this computer.
+# MACHINE-SPECIFIC（本机专属）：下面这个 Windows EFI 分区 UUID 属于这台电脑。
 { ... }:
 
 {

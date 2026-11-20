@@ -1,4 +1,4 @@
-# MACHINE-SPECIFIC: NVIDIA PRIME bus IDs must be detected on each computer.
+# MACHINE-SPECIFIC（本机专属）：NVIDIA PRIME 的总线号必须在每台电脑上重新探测。
 { pkgs, config, ... }:
 
 {
@@ -7,8 +7,9 @@
     enable = true;
   };
 
-  # NVIDIA 驱动
-  services.xserver.videoDrivers = [ "nvidia" ];
+  # NVIDIA 驱动。modesetting + nvidia 两个内核驱动都由这里声明：
+  # 这是硬件策略，不要同时写在 modules/desktop.nix（列表会合并出重复项）。
+  services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
 
   hardware.nvidia = {
     # 启用 DRM modesetting（Wayland 必需）

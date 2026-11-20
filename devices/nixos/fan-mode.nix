@@ -21,7 +21,8 @@ let
     text = ''
       # 一条命令管理本机的散热策略：ASUS 风扇曲线 + Intel CPU 调频。
       #
-      #   fan-mode              在 quiet 与 balanced 之间来回切换
+      #   fan-mode              在 quiet 与 balanced 之间来回切换（powersave → quiet）
+      #   fan-mode powersave    最低功耗：关睿频、CPU 上限压到地板、EPP 固定 power
       #   fan-mode quiet        安静：关睿频、CPU 上限低
       #   fan-mode balanced     平衡：开睿频，插电不限速
       #   fan-mode performance  性能：睿频、上限、EPP 全部放开
@@ -32,6 +33,8 @@ let
       #
       # ── 策略表（mode:电源，1=交流电 0=电池）──────────────────────────────
       #   mode:ac        platform_profile   睿频   max_perf_pct   EPP
+      #   powersave:1    quiet              关     25             power
+      #   powersave:0    quiet              关     20             power
       #   quiet:1        quiet              关     65             balance_power
       #   quiet:0        quiet              关     45             power
       #   balanced:1     balanced           开     100            balance_power
@@ -43,6 +46,15 @@ let
       # （AC: 关睿频/65/balance_power，BAT: 关睿频/45/power），
       # 所以换过来之后默认模式行为完全不变，不会莫名变慢或变吵。
       # 注意 max_perf_pct 是「关睿频后」的百分比，和「开睿频」时不是同一把尺子。
+      #
+      # powersave 是本机能做到的最低功耗组合：固件只暴露 quiet/balanced/
+      # performance 三档 platform_profile（见 platform_profile_choices），没有
+      # 更省的档位，所以 powersave 复用 quiet 的固件档位，把省电全部压在
+      # intel_pstate 上——关睿频 + max_perf_pct 压到底板 + EPP=power。
+      # 本机 min_perf_pct=18，所以 20 就是这条曲线的下界，再写小也会被钳到 18。
+      # AC 留 25 而不是 20：插电时通常还要跑更新、编译和视频通话，
+      # 真正「最低功耗」留给电池那一格。
+      # powersave 与 quiet 共用固件档位，所以 status 靠状态文件区分两者。
 
       PROFILE_FILE=${lib.escapeShellArg profileFile}
       STATE_FILE=${lib.escapeShellArg stateFile}
@@ -51,7 +63,17 @@ let
       INTEL_PSTATE=${lib.escapeShellArg intelPstate}
 
       DEFAULT_MODE=quiet
-      MODES=(quiet balanced performance)
+      MODES=(powersave quiet balanced performance)
+
+      # 模式 → 固件 platform_profile。powersave 没有独立档位，复用 quiet。
+      profile_for_mode() {
+        case "$1" in
+          powersave|quiet) printf 'quiet' ;;
+          balanced)        printf 'balanced' ;;
+          performance)     printf 'performance' ;;
+          *)               printf '%s' "" ;;
+        esac
+      }
 
       die() {
         printf 'fan-mode: %s\n' "$*" >&2
@@ -84,6 +106,20 @@ let
         fi
       }
 
+      # 实际生效的模式名。powersave 与 quiet 共用固件档位 quiet，
+      # 所以只有「记录的模式 → 换算出的档位」等于当前档位时才算数，
+      # 否则说明档位被别处改过，直接回报固件里的原始值。
+      effective_mode() {
+        local p mode
+        p=$(current_mode)
+        mode=$(saved_mode)
+        if valid_mode "$mode" && [ "$(profile_for_mode "$mode")" = "$p" ]; then
+          printf '%s' "$mode"
+        else
+          printf '%s' "$p"
+        fi
+      }
+
       # 只要任一交流/USB 电源报告 online=1 就算插电。
       # 不写死 ADP0：本机还可能有 USB-C PD 供电。
       on_ac() {
@@ -99,6 +135,8 @@ let
       # 查策略表，结果放进 NO_TURBO / MAX_PERF / EPP
       cpu_policy() {
         case "$1:$2" in
+          powersave:1)    NO_TURBO=1; MAX_PERF=25;  EPP=power ;;
+          powersave:0)    NO_TURBO=1; MAX_PERF=20;  EPP=power ;;
           quiet:1)        NO_TURBO=1; MAX_PERF=65;  EPP=balance_power ;;
           quiet:0)        NO_TURBO=1; MAX_PERF=45;  EPP=power ;;
           balanced:1)     NO_TURBO=0; MAX_PERF=100; EPP=balance_power ;;
@@ -134,20 +172,25 @@ let
 
         valid_mode "$mode" || die "未知模式 '$mode'（可选：''${MODES[*]}）"
 
+        # 模式名不等于固件档位名（powersave 写的是 quiet），先换算
+        local profile
+        profile=$(profile_for_mode "$mode")
+        [ -n "$profile" ] || die "模式 '$mode' 没有对应的 platform_profile"
+
         # 固件只接受 platform_profile_choices 里列出的值，这里再核对一次
         if [ -r "$STATE_CHOICES" ]; then
           local choices
           choices=$(tr -s '[:space:]' ' ' < "$STATE_CHOICES")
-          case "$choices" in
-            *"$mode"*) ;;
-            *) die "固件不支持模式 '$mode'（支持：$choices）" ;;
+          case " $choices " in
+            *" $profile "*) ;;
+            *) die "固件不支持档位 '$profile'（模式 '$mode' 需要它，实际支持：$choices）" ;;
           esac
         fi
 
         # 先建状态目录，避免写成功 sysfs 却记不下选择
         install -d -m 0755 "$STATE_DIR"
 
-        printf '%s\n' "$mode" > "$PROFILE_FILE" || die "写入 $PROFILE_FILE 失败"
+        printf '%s\n' "$profile" > "$PROFILE_FILE" || die "写入 $PROFILE_FILE 失败"
         printf '%s\n' "$mode" > "$STATE_FILE"
 
         if on_ac; then
@@ -156,7 +199,7 @@ let
           apply_cpu "$mode" 0
         fi
 
-        printf '风扇模式 → %s（已记录，重启后自动恢复）\n' "$mode"
+        printf '风扇模式 → %s（固件档位 %s，已记录，重启后自动恢复）\n' "$mode" "$profile"
       }
 
       turbo_state() {
@@ -182,7 +225,14 @@ let
       if [ "$action" = status ]; then
         # 单独赋值：否则 current_mode 里的 die 只退出命令替换的子 shell
         cur=$(current_mode)
-        printf '当前生效   : %s\n' "$cur"
+        eff=$(effective_mode)
+        [ -n "$eff" ] || die "读不到当前模式（$STATE_FILE 与 $PROFILE_FILE 都不对？）"
+        # powersave 与 quiet 共用固件档位，两者不同时把档位一并列出来
+        if [ "$eff" = "$cur" ]; then
+          printf '当前生效   : %s\n' "$eff"
+        else
+          printf '当前生效   : %s（固件平台档位 %s）\n' "$eff" "$cur"
+        fi
         printf '重启后恢复 : %s\n' "$(saved_mode)"
         if on_ac; then
           printf '电源       : 交流电\n'
@@ -192,7 +242,8 @@ let
         printf 'CPU 睿频   : %s\n' "$(turbo_state)"
         printf 'CPU 上限   : %s\n' "$(perf_state)"
         printf 'CPU EPP    : %s\n' "$(read_sysf /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference)"
-        printf '可选模式   : %s\n' "$(cat "$STATE_CHOICES" 2>/dev/null || printf '%s' "''${MODES[*]}")"
+        printf '可选模式   : %s\n' "''${MODES[*]}"
+        printf '固件档位   : %s\n' "$(cat "$STATE_CHOICES" 2>/dev/null || printf 'quiet balanced performance')"
         exit 0
       fi
 
@@ -204,11 +255,15 @@ let
 
       case "$action" in
         toggle)
-          if [ "$(current_mode)" = quiet ]; then
-            apply_mode balanced
-          else
-            apply_mode quiet
-          fi
+          # powersave 与 quiet 共用固件档位，必须看生效模式而不是固件档位：
+          # powersave → quiet → balanced，避免从最省电直接跳到满血。
+          cur_eff=$(effective_mode)
+          [ -n "$cur_eff" ] || die "读不到当前模式（$PROFILE_FILE 不可读？）"
+          case "$cur_eff" in
+            quiet)     apply_mode balanced ;;
+            powersave) apply_mode quiet ;;
+            *)         apply_mode quiet ;;
+          esac
           ;;
         restore)
           # 供 fan-mode-restore.service 调用：套用上次记录的值

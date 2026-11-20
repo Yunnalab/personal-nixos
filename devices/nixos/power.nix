@@ -1,4 +1,4 @@
-# MACHINE-SPECIFIC: tuned for this Intel laptop's power and thermal behavior.
+# MACHINE-SPECIFIC（本机专属）：按这台 Intel 笔记本的功耗与散热特性调过。
 { ... }:
 
 {

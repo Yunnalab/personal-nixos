@@ -12,15 +12,10 @@
     ./fan-mode.nix
     ../../modules/nix-settings.nix
     ../../modules/packages.nix
-    ../../modules/nixpkgs-overrides.nix
-    ../../modules/qq-fix.nix
-    ../../modules/anki-fix.nix
+    ../../apps/nixos
     ./power.nix
-    ../../modules/proxy.nix
     ../../modules/users.nix
-    ../../modules/docker-setting.nix
     ../../modules/shell.nix
-    ../../modules/steam.nix
     ../../modules/security
   ];
 
@@ -29,6 +24,13 @@
     device = "/swapfile";
     size = 8192;
   }];
+
+  # ── 本机网络身份与额外开放端口 ──
+  # 主机名和端口属于本机策略，不放在通用的 modules/networking.nix 里。
+  networking.hostName = "nixos";
+  # 7681：ttyd 网页终端。目前没有对应 systemd 服务，需要时手动
+  # `ttyd -p 7681 <命令>`；22（SSH）由 security.hardening.allowedTCPPorts 放行。
+  networking.firewall.allowedTCPPorts = [ 7681 ];
 
   # ── 安全配置 ──
   security.aide = {

@@ -1,16 +1,8 @@
 { pkgs, ... }:
 
+# 用户程序本体的一般配置。
+# 逐应用的联网设置与上游未修 bug 的处理在 apps/home/（Chrome 的代理参数就在那里）。
 {
-  programs.google-chrome = {
-    enable = true;
-    commandLineArgs = [
-      "--enable-experimental-web-platform-features"
-      "--enable-features=AcceleratedVideoDecodeLinuxGL"
-      # Chrome 固定走 clash 混合代理端口（socks5）
-      "--proxy-server=socks5://127.0.0.1:7897"
-    ];
-  };
-
   programs.firefox = {
     enable = true;
     profiles.main = {

@@ -4,6 +4,8 @@ let
   # 别名与 eza 参数都取自 modules/shell-aliases-data.nix（与系统 shell 共享的纯数据）。
   # 不要在本模块里再手写 eza 的 flag。
   shellData = import ../../modules/shell-aliases-data.nix;
+  # clash 端口同理，取自 apps/clash-proxy-data.nix。
+  clash = import ../../apps/clash-proxy-data.nix;
 in
 {
   programs.fish = {
@@ -84,10 +86,10 @@ in
       proxy = ''
         switch "$argv[1]"
           case on
-            set -gx http_proxy http://127.0.0.1:7897
-            set -gx https_proxy http://127.0.0.1:7897
-            set -gx all_proxy socks5://127.0.0.1:7897
-            echo "终端代理已开启 (127.0.0.1:7897)"
+            set -gx http_proxy ${clash.http}
+            set -gx https_proxy ${clash.http}
+            set -gx all_proxy ${clash.socks}
+            echo "终端代理已开启 (${clash.host}:${toString clash.port})"
           case off
             set -e http_proxy
             set -e https_proxy

@@ -1,5 +1,5 @@
-# MACHINE-SPECIFIC: regenerate this file on every new computer.
-# It contains this machine's disk UUIDs, kernel modules, and hardware platform.
+# MACHINE-SPECIFIC（本机专属）：换电脑必须用 nixos-generate-config 重新生成本文件，
+# 里面是本机的磁盘 UUID、内核模块和硬件平台。
 { config, lib, pkgs, modulesPath, ... }:
 
 {

@@ -1,4 +1,4 @@
-# MACHINE-SPECIFIC: ASUS keyboard LED paths are not portable.
+# MACHINE-SPECIFIC（本机专属）：华硕键盘 LED 的 sysfs 路径不可移植。
 { ... }:
 
 {

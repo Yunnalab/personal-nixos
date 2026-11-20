@@ -113,8 +113,6 @@
     # home/cloudygirl/desktop.nix 的 settings.shell.greeter_sync.auto_sync。
   };
 
-  services.xserver.videoDrivers = [ "modesetting" "nvidia" ];
-
   # 音频：显式启用 PipeWire 全栈，确保 pactl/pavucontrol 可用
   services.pipewire = {
     enable = true;

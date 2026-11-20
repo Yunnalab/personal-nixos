@@ -12,11 +12,11 @@
 # 处理程序（mime.nix 里的设置）。它只用于「手动点开、这次要走代理」的场景。
 
 let
-  # clash-verge 的混合端口，http 与 socks5 共用。apps.nix 里 Chrome 也用同一个值。
-  proxyPort = 7897;
-  proxyHttp = "http://127.0.0.1:${toString proxyPort}";
-  proxySocks = "socks5://127.0.0.1:${toString proxyPort}";
-  noProxy = "localhost,127.0.0.1,::1";
+  # 端口只在这里定义：apps/clash-proxy-data.nix
+  clash = import ../clash-proxy-data.nix;
+  proxyHttp = clash.http;
+  proxySocks = clash.socks;
+  noProxy = clash.noProxy;
 
   chatgpt-proxy = pkgs.writeShellApplication {
     name = "chatgpt-proxy";
@@ -95,7 +95,7 @@ in
   xdg.desktopEntries."chatgpt-proxy" = {
     name = "ChatGPT（Clash 代理）";
     genericName = "AI assistant";
-    comment = "通过 clash 端口 ${toString proxyPort} 启动；会先关掉未走代理的实例";
+    comment = "通过 clash 端口 ${toString clash.port} 启动；会先关掉未走代理的实例";
     exec = "${chatgpt-proxy}/bin/chatgpt-proxy %U";
     icon = "chatgpt";
     terminal = false;
