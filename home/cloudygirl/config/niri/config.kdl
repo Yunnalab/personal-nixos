@@ -11,6 +11,9 @@ screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 environment {
     QT_QPA_PLATFORM "wayland"
+    // WebKitGTK( clash-verge / Tauri 等 ) 走 DMABUF 渲染器时，在这台 NVIDIA PRIME 机器上
+    // 会出现界面卡死（进程已死锁，SIGTERM 都杀不掉，只能 -9）。关掉 DMABUF 渲染器规避。
+    WEBKIT_DISABLE_DMABUF_RENDERER "1"
 }
 
 xwayland-satellite {
