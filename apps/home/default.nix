@@ -6,5 +6,6 @@
   imports = [
     ./chrome.nix
     ./chatgpt-proxy.nix
+    ./element.nix
   ];
 }

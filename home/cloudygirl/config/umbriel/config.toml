@@ -1,0 +1,343 @@
+# Umbriel 合成器配置（wlroots + SceneFX，Noctalia 团队出品）。
+# 由 home/cloudygirl/desktop.nix 部署到 ~/.config/umbriel/config.toml。
+# 内容按原 niri 的 config.kdl 逐项翻译；Umbriel 没有对应物的地方就地写明。
+# 改完可用 `umbriel config validate` 校验，`umbriel msg config-reload` 热重载
+#（general.xwayland / autostart / xwayland_* 这几项仍需重启会话）。
+
+# ── include ──
+# noctalia.toml 由 Noctalia 的主题模板在运行时生成（边框、标签、标题栏配色），
+# 所以放进 optional：文件不存在也不影响启动。它排在本文件之后加载，
+# 同名键会覆盖下面的值（相当于 niri 时代 include "noctalia.kdl"）。
+#
+# border/pulse 是 Umbriel 自带的边框光效预设。NixOS 下 effect 目录由
+# programs.umbriel 链接到 /run/current-system/sw/share/umbriel/effects，
+# 这个路径跨 rebuild 不变；只 include 不会生效，还要在 [effects] 里点名。
+[include]
+files = [
+  "/run/current-system/sw/share/umbriel/effects/border/pulse/effect.toml",
+]
+
+[include.optional]
+files = ["noctalia.toml"]
+
+# ── general ──
+[general]
+# niri 的 mod-key "Super"。Umbriel 在 DRM 会话下默认也是 Super，这里写明不靠默认值。
+mod_key = "Super"
+
+# 原 niri 的 spawn-at-startup 列表。
+# noctalia 不在其中：它由 noctalia.service 启动，两边都启动会抢单例
+#（曾导致该服务 start-limit-hit 失败）。
+# 也不再需要 niri 里的 `systemctl --user import-environment`：umbriel 的
+# start-umbriel 脚本自己会把登录环境导入 systemd 用户会话。
+autostart = [
+  "fcitx5",
+  "systemctl --user start polkit-kde-agent.service",
+  "clash-verge",
+  "kitty",
+]
+
+# niri 的 hotkey-overlay skip-at-startup：Umbriel 对应的启动速查表也关掉。
+show_cheatsheet = false
+
+# 原 niri 用 xwayland-satellite 提供 XWayland；Umbriel 自带 Xwayland，
+# 外部 satellite 不再需要（home/cloudygirl/packages.nix 里已移除）。
+xwayland = true
+
+# 抄自 Lhcfl/nixos-cfg：让 X11 应用看到物理分辨率，1.25 缩放下不发虚。
+# 代价是不自己缩放的 X11 应用在这块 2560x1600 内屏上会显得偏小。
+xwayland_native_resolution = true
+
+[environment]
+QT_QPA_PLATFORM = "wayland"
+# WebKitGTK（clash-verge / Tauri 等）走 DMABUF 渲染器时，在这台 NVIDIA PRIME
+# 机器上会界面卡死（进程已死锁，SIGTERM 都杀不掉，只能 -9）。关掉规避。
+WEBKIT_DISABLE_DMABUF_RENDERER = "1"
+
+# ── appearance ──
+[appearance]
+prefer_no_csd = true # niri: prefer-no-csd
+border_width = 2     # niri: layout border width 2
+corner_radius = 10   # niri: window-rule geometry-corner-radius 10
+drag_opacity = 0.75
+
+# 服务端标题栏（niri 只有 CSD，这一项是 Umbriel 新给的）。
+# mode：
+#   "negotiated"（当前）只给协商了 server-side decorations 的 Wayland 窗口画，
+#                Chromium/Electron 这类自己画标题栏的应用不会出现双层标题栏；
+#   "on"         跟随客户端偏好、未知时也画（较统一，但 GTK 应用容易双栏）；
+#   "forced"     不管客户端意愿一律加栏；“off” 关闭。
+# 拖空白处可无 Mod 移窗，双击切最大化。
+[appearance.title_bar]
+mode = "negotiated"
+height = 28
+font = "sans 10"
+title_align = "left"
+button_position = "right"
+buttons = ["minimize", "maximize", "close"]
+button_gap = 8
+
+[appearance.blur]
+enabled = true
+passes = 3        # niri: blur passes 3
+radius = 3        # niri: blur offset 3.0（Umbriel 只有 radius，没有 offset）
+noise = 0.02      # niri: blur noise 0.02
+saturation = 1.5  # niri: blur saturation 1.5
+
+[appearance.shadow]
+enabled = true
+softness = 12 # niri: layout shadow softness 12（spread 2 无对应项）
+offset_x = 0
+offset_y = 4
+
+[colors]
+background = "#111111FF"  # niri: layout background-color
+backdrop = "#111111FF"
+insert_hint = "#ddaa7780" # niri: layout insert-hint
+shadow = "#1a1a1aee"      # niri: layout shadow color
+
+# niri 的 border active-gradient（#ddaa77ee → #eebb99ee 的 45° 渐变）Umbriel
+# 没有渐变边框，这里取渐变中点做近似。Noctalia 主题模板会覆盖这两个值，
+# 想再要渐变只能走 effects 预设（/usr/share/umbriel/effects/border/...）。
+[colors.border]
+focused = "#ddaa77ee"
+unfocused = "#595959aa"
+
+# 标题栏配色（Noctalia 主题模板会覆盖成主题色）。背景留一点透明度，
+# 让窗口的 blur 规则能透过后面的模糊背景。
+[colors.title_bar]
+background = "#1a1a1aee"
+background_unfocused = "#141414cc"
+text = "#e8e8e8ff"
+text_unfocused = "#8a8a92ff"
+close = "#e05a5aff"
+maximize = "#ddaa77ff"
+minimize = "#7aa3ffff"
+
+[colors.overview]
+workspace_background = "#1a1a1aFF" # niri: overview backdrop-color
+
+# ── overview ──
+[overview]
+zoom = 0.5 # niri: overview zoom
+
+# ── input ──
+[input.keyboard]
+layout = "us"
+
+[input.touchpad]
+tap = true            # niri: touchpad tap
+natural_scroll = true # niri: touchpad natural-scroll
+
+[input.focus]
+follows_mouse = "sloppy" # niri: focus-follows-mouse（sloppy = 指针移入才换焦点）
+hover_raises = true
+
+[input.cursor]
+size = 24               # niri: cursor xcursor-size 24
+hide_when_typing = true # niri: cursor hide-when-typing
+
+# niri 的 gestures { dnd-edge-view-scroll / dnd-edge-workspace-switch }。
+# Umbriel 只有一个边缘拖动滚动区，两处共用这组值（取 view-scroll 的 30px）。
+[input.drag_edge_scroll]
+enabled = true
+trigger_zone = 30
+delay_ms = 100
+max_speed = 1500.0
+
+[workspaces]
+back_and_forth = true # niri: workspace-auto-back-and-forth
+
+# ── layout ──
+[layout]
+gap = 3 # niri: layout gaps 3
+extent_presets = [0.33, 0.49, 0.65, 0.98]
+
+[layout.scrolling]
+default_extent_fraction = 0.49 # niri: default-column-width { proportion 0.49 }
+center_focused = "never"       # niri: center-focused-column "never"
+
+# 内屏：固定 9 个工作区（让 Mod+1..9 与 niri 的编号工作区一致）+ 缩放 1.25。
+# 缩放的理由：面板 2560x1600 / 16 寸，1.0 下界面偏小；greeter 那边同样写 1.25
+# （modules/desktop.nix 的 output.scales），登录界面和桌面观感才一致。
+# 想调：1.125 更紧凑，1.5 更大。
+#
+# Umbriel 默认是动态清单（min_workspaces 只保证下限），动态清单下
+# `workspace-switch 5` 只有 2 个工作区时会落到最后一个，和 niri 的手感不同。
+# 外接显示器没有匹配的 section，仍是动态清单（最低 1 个，随用随建）。
+#
+# ⚠️ 连接器名以 `umbriel outputs` 为准：本机这块内屏在 card1（iGPU, PRIME）上是
+#    **eDP-2**，不是旧笔记里写的 eDP-1。写错名字不会报错，只是整段静默不生效
+#   （曾经写成 eDP-1，结果内屏只有 2 个动态工作区）。
+[output.eDP-2]
+workspaces = 9
+scale = 1.25
+
+# ── animation ──
+[animation.workspaces]
+curve = "spring:1,1000" # niri: workspace-switch spring 1.0/1000
+
+[animation.windows_in]
+duration_ms = 140      # niri: window-open 140ms
+curve = "0.16,1,0.3,1" # niri: ease-out-expo（Bézier 近似）
+
+[animation.windows_out]
+duration_ms = 120 # niri: window-close 120ms
+curve = "linear"
+
+[animation.windows_move]
+curve = "spring:1,850" # niri: window-movement / horizontal-view-movement
+
+[animation.windows_resize]
+curve = "spring:1,850" # niri: window-resize
+
+[animation.overview]
+curve = "spring:1,800" # niri: overview-open-close
+
+# 拖窗像弹片：窗口跟手但略滞后，被拉住时像被钉住的弹性薄片，松手回弹。
+# 需要 [animation] 总开关（默认开）。数值微调：
+#   stiffness 越大越“硬”，coupling 越小越像水，pointer_response 0 = 完全不变形。
+[animation.windows_drag]
+physics = true
+stiffness = 36.0
+damping = 6.5
+coupling = 100.0
+pointer_response = 2.0
+max_displacement_px = 200.0
+
+# ── effects ──
+# pulse：焦点窗口边框跑一圈呼吸光。预设自带 padding = 24，那是给光晕留的
+# 透明空间，所以窗口间距会明显变大；嫌散可以在本文件里另定义 preset
+#（kind = "border"，shader 指向上面的 pulse/shader.glsl，padding 改小）。
+[effects]
+border = "pulse"
+
+# ── window rules ──
+# kitty：透明背景走背景模糊（niri 里只有 kitty 开了 background-effect blur）。
+[[window_rule]]
+match.app_id = "^kitty$"
+blur = true
+
+# LibreOffice（含 XWayland 下的 soffice）：默认占满一列。
+[[window_rule]]
+match.app_id = "^(soffice|libreoffice.*)$"
+default_scrolling_extent = 0.98 # niri: default-column-width { proportion 0.98 }
+
+# cmatrix：整屏铺开，不要圆角。
+[[window_rule]]
+match.app_id = "^cmatrix$"
+default_floating = true
+default_fullscreen = true
+corner_radius = 0
+
+# ── layer rules（抄 self 上游 examples/config.toml）──
+# Noctalia 的 bar 贴在壁纸上，用较便宜的缓存模糊；面板/通知/OSD 浮在窗口上方，
+# 必须模糊实时内容（blur_optimized = false）。
+[[layer_rule]]
+match.namespace = "^noctalia-(bar-.*|notification|dock|panel|attached-panel|osd|desktop-widget-.*)$"
+blur = true
+blur_ignore_alpha = 0.5
+blur_popups = true
+
+[[layer_rule]]
+match.namespace = "^noctalia-(notification|dock|panel|attached-panel|osd)$"
+blur_optimized = false
+
+# ── hot corners（抄自 Lhcfl/nixos-cfg 的 umbriel 配置）──
+[hot_corners.top_left]
+enabled = true
+delay_ms = 500
+action = "overview-open"
+
+# ── keybinds ──
+# 定义 [keybinds] 会整份替换内置绑定表，所以这里必须把要用的绑定都写全。
+[keybinds]
+# 工作区切换（滚轮），niri 是 cooldown-ms=150
+"Mod+WheelDown" = { action = "workspace-next", cooldown_ms = 150 }
+"Mod+WheelUp" = { action = "workspace-previous", cooldown_ms = 150 }
+
+# 应用与面板
+"Ctrl+Alt+T" = "spawn kitty"
+"Mod+V" = "spawn noctalia msg panel-toggle clipboard"
+"Mod+E" = "spawn thunar /home/cloudygirl"
+"Mod+B" = "spawn google-chrome"
+"Mod+T" = "spawn goldendict"
+"Mod+F" = "spawn noctalia msg panel-toggle launcher"
+"Mod+Escape" = { action = "spawn noctalia msg panel-toggle control-center", repeat = false }
+
+# 截图：改用 Noctalia 的截图（niri 自带截图随 niri 一起去掉）。
+#   Print      → 交互式框选（可标注，保存/复制由 Noctalia 的截图设置决定）
+#   Ctrl+Print → 直接截取聚焦屏幕
+#   Alt+Print  → 直接截取聚焦窗口
+"Print" = { action = "spawn noctalia msg screenshot-region", repeat = false }
+"Ctrl+Print" = { action = "spawn noctalia msg screenshot-fullscreen", repeat = false }
+"Alt+Print" = { action = "spawn noctalia msg screenshot-window", repeat = false }
+
+"Mod+L" = { action = "spawn noctalia msg session lock", repeat = false }
+"Mod+Period" = "spawn kitty --class cmatrix -e cmatrix"
+# 边框光效开关（想安静一会儿时关掉脉冲）
+"Mod+Shift+E" = { action = "effect-border-toggle", repeat = false }
+
+# 媒体键：走 wpctl / playerctl / brightnessctl（与 niri 时代一致，不换 Noctalia OSD）
+"XF86AudioMute" = { action = "spawn wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle", allow_when_locked = true, repeat = false }
+"XF86AudioMicMute" = { action = "spawn wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle", allow_when_locked = true, repeat = false }
+"XF86AudioLowerVolume" = { action = "spawn wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-", allow_when_locked = true }
+"XF86AudioRaiseVolume" = { action = "spawn wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+", allow_when_locked = true }
+
+"XF86AudioPlay" = { action = "spawn playerctl play-pause", allow_when_locked = true, repeat = false }
+"XF86AudioPause" = { action = "spawn playerctl play-pause", allow_when_locked = true, repeat = false }
+"XF86AudioNext" = { action = "spawn playerctl next", allow_when_locked = true, repeat = false }
+"XF86AudioPrev" = { action = "spawn playerctl previous", allow_when_locked = true, repeat = false }
+
+"XF86MonBrightnessUp" = { action = "spawn brightnessctl -e4 -n2 set 5%+", allow_when_locked = true }
+"XF86MonBrightnessDown" = { action = "spawn brightnessctl -e4 -n2 set 5%-", allow_when_locked = true }
+
+# 窗口与会话
+"Mod+Q" = { action = "window-close", repeat = false }
+"Alt+F4" = { action = "window-close", repeat = false }
+# session-quit 需要再按一次确认（niri 的 quit 是立即退出）；这里保留这道保护。
+"Mod+Delete" = { action = "session-quit", allow_when_inhibited = true, repeat = false }
+"Mod+Shift+Escape" = { action = "shortcuts-inhibit-toggle", allow_when_inhibited = true, repeat = false }
+"Mod+Shift+F" = { action = "window-toggle-floating", repeat = false }
+"Mod+G" = { action = "column-toggle-tabbed", repeat = false }
+"Shift+F11" = { action = "window-toggle-fullscreen", repeat = false }
+"Mod+M" = { action = "window-toggle-maximize", repeat = false }
+"Mod+C" = { action = "column-center" }
+"Mod+O" = { action = "overview-toggle", repeat = false }
+
+# 焦点与移动
+"Mod+Left" = "window-focus-left"
+"Mod+Right" = "window-focus-right"
+"Mod+Up" = "window-focus-up"
+"Mod+Down" = "window-focus-down"
+"Mod+Tab" = "workspace-focus-last" # niri: focus-workspace-previous
+"Mod+R" = "window-cycle-primary-extent" # niri: switch-preset-column-width
+
+"Mod+Shift+Left" = "column-move-left"
+"Mod+Shift+Right" = "column-move-right"
+"Mod+Shift+Up" = "window-move-to-workspace-previous"
+"Mod+Shift+Down" = "window-move-to-workspace-next"
+
+# 工作区 1–9
+"Mod+1" = "workspace-switch 1"
+"Mod+2" = "workspace-switch 2"
+"Mod+3" = "workspace-switch 3"
+"Mod+4" = "workspace-switch 4"
+"Mod+5" = "workspace-switch 5"
+"Mod+6" = "workspace-switch 6"
+"Mod+7" = "workspace-switch 7"
+"Mod+8" = "workspace-switch 8"
+"Mod+9" = "workspace-switch 9"
+
+"Mod+Shift+1" = "column-move-to-workspace 1"
+"Mod+Shift+2" = "column-move-to-workspace 2"
+"Mod+Shift+3" = "column-move-to-workspace 3"
+"Mod+Shift+4" = "column-move-to-workspace 4"
+"Mod+Shift+5" = "column-move-to-workspace 5"
+"Mod+Shift+6" = "column-move-to-workspace 6"
+"Mod+Shift+7" = "column-move-to-workspace 7"
+"Mod+Shift+8" = "column-move-to-workspace 8"
+"Mod+Shift+9" = "column-move-to-workspace 9"
+
+# 原 niri 的 `Mod+Shift+N { move-window-to-workspace 255; }`（扔到一个新的空工作区）
+# 在 Umbriel 里没有等价物：工作区是动态/固定清单，不存在“按编号按需新建”。

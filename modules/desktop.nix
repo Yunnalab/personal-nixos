@@ -13,17 +13,29 @@
     NIXOS_OZONE_WL = "1";
   };
 
-  # 桌面栈：Plasma 作为应急备用桌面，Niri 为主桌面。
+  # 桌面栈：Plasma 作为应急备用桌面，Umbriel 为主桌面。
   # 登录界面使用 greetd + noctalia-greeter（见文件末尾），不再使用 SDDM / tuigreet。
   services.xserver.enable = true;
   services.desktopManager.plasma6.enable = true;
   environment.plasma6.excludePackages = with pkgs.kdePackages; [
     dolphin
   ];
+
+  # Umbriel（noctalia-dev 的 wlroots + SceneFX 合成器，niri 的替代品）。
+  # 该模块负责：装 umbriel 与 xdg-desktop-portal-umbriel、注册 wayland-session
+  # .desktop、启用 systemd 用户单元 umbriel.service、接上 xdg.portal。
+  # 配置本身在 home/cloudygirl/config/umbriel/config.toml。
+  programs.umbriel.enable = true;
+
+  # niri 与 Umbriel **并存**：两个模块各自注册 wayland-session 条目，
+  # 登录界面（greetd + noctalia-greeter）里会出现 Niri / Umbriel / Plasma (Wayland)
+  # 三项，想用哪个进哪个。默认仍是 Umbriel。
+  # niri 用自己那份配置（home/cloudygirl/config/niri/config.kdl，由
+  # home/cloudygirl/desktop.nix 部署），两份配置各自维护、不互相影响。
   programs.niri.enable = true;
 
-  # niri 为主桌面：明确默认会话，避免与 plasma6 的 defaultSession 冲突
-  services.displayManager.defaultSession = lib.mkForce "niri";
+  # Umbriel 为主桌面：明确默认会话，避免与 plasma6 的 defaultSession 冲突
+  services.displayManager.defaultSession = lib.mkForce "umbriel";
 
   # ── 关机不再“假死” ──
   # 症状：关机时卡在 “Stopping A scrollable-tiling Wayland compositor...”，
@@ -32,13 +44,17 @@
   # 2026-09-20 21:49 那次关机（journalctl -b -1）就是这样：
   #   [12519.596] systemd[2613]: Stopping A scrollable-tiling Wayland compositor...
   #   （之后 51 秒无任何日志，直到用户按电源键）
-  # 内核和 PID1 都还活着（logind 仍在记录合盖事件），说明是 niri 自己
+  # 内核和 PID1 都还活着（logind 仍在记录合盖事件），说明是合成器自己
   # 卡在退出流程，而不是内核挂死。
   #
   # systemd 对 Type=notify 的服务默认要等 DefaultTimeoutStopSec=90s 才会
-  # SIGKILL，于是表现为“死机”。niri 正常退出只要 ~0.3s（对比 -2/-6 两次
-  # 干净关机），所以给它一个短超时：10s 内没退就直接杀掉，关机流程继续。
+  # SIGKILL，于是表现为“死机”。合成器正常退出只要 ~0.3s，所以给它一个短超时：
+  # 10s 内没退就直接杀掉，关机流程继续。（niri 和 Umbriel 都是 Type=notify 的
+  # 可滚动平铺合成器，两个都设；退出会话时哪个在跑就生效哪个。）
   systemd.user.services.niri.serviceConfig = {
+    TimeoutStopSec = 10;
+  };
+  systemd.user.services.umbriel.serviceConfig = {
     TimeoutStopSec = 10;
   };
 
@@ -50,12 +66,12 @@
   # 视觉风格与 Noctalia Shell 一致。nixpkgs unstable 已收录该包和模块
   # （services.displayManager.noctalia-greeter），不需要额外 flake input。
   # 会话列表：greeter 直接扫 /run/current-system/sw/share/wayland-sessions，
-  # niri / plasma 的 .desktop 都在那里，无需手动指定路径。
+  # umbriel / plasma 的 .desktop 都在那里，无需手动指定路径。
   services.displayManager.noctalia-greeter = {
     enable = true;
 
     settings = {
-      session.default = "niri";        # 默认会话（Name= 字段，不是 .desktop 文件名）
+      session.default = "umbriel";     # 默认会话（Name= 字段，不是 .desktop 文件名）
       user.default = "cloudygirl";     # 开机直接进入密码步骤
 
       # "Synced" = 用 Noctalia Shell 同步过来的配色（sync.toml）。
@@ -68,9 +84,14 @@
       idle.timeout = 300;              # 5 分钟无操作熄灭屏幕，0 = 不熄灭
 
       # 尺寸：面板 2560x1600 / 350x220mm，按 EDID 算出来的自动缩放≈1.93
-      #（上限 2），所以界面明显偏大。这里只给内屏写死成和 niri 会话一致的 1.25；
+      #（上限 2），所以界面明显偏大。这里只给内屏写死成 1.25；
       # 外接显示器不在列表里，仍按各自的 DPI 自动缩放。
-      output.scales = "eDP-1:1.25";
+      #
+      # ⚠️ 连接器名是 **eDP-2**（本机内屏接在 card1 / iGPU 上），不是 eDP-1。
+      #    原来写成 eDP-1 时这条从来没匹配上，登录界面一直是 1.0——和
+      #    home/cloudygirl/config/umbriel/config.toml 里 [output.eDP-2] 的 1.25
+      #    一起改，登录界面与桌面缩放才一致。查真实名字：`umbriel outputs`。
+      output.scales = "eDP-2:1.25";
     };
 
     # NixOS 上默认游标查找路径（~/.icons、/usr/share/icons）不存在，必须显式给包

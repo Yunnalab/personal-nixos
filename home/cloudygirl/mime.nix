@@ -111,11 +111,16 @@ in
 {
   xdg.configFile."kde-mimeapps.list".source =
     config.xdg.configFile."mimeapps.list".source;
+  # niri 与 umbriel 并存，两个会话各自的 $XDG_CURRENT_DESKTOP 会去找自己的这份。
   xdg.configFile."niri-mimeapps.list".source =
+    config.xdg.configFile."mimeapps.list".source;
+  xdg.configFile."umbriel-mimeapps.list".source =
     config.xdg.configFile."mimeapps.list".source;
   xdg.dataFile."applications/kde-mimeapps.list".source =
     config.xdg.configFile."mimeapps.list".source;
   xdg.dataFile."applications/niri-mimeapps.list".source =
+    config.xdg.configFile."mimeapps.list".source;
+  xdg.dataFile."applications/umbriel-mimeapps.list".source =
     config.xdg.configFile."mimeapps.list".source;
 
   xdg.mimeApps = {

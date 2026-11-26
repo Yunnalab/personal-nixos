@@ -93,7 +93,8 @@ in
     ffmpeg
     kdePackages.gwenview
     go-musicfox
-    # 截图改用 niri 自带截图工具（Print / Ctrl+Print / Alt+Print），不再安装 flameshot
+    # 截图改走 Noctalia（`noctalia msg screenshot-region/fullscreen/window`，
+    # 截图键位在 home/cloudygirl/config/umbriel/config.toml），不再安装 flameshot。
 
     # ── 阅读/文档 ──
     marktext

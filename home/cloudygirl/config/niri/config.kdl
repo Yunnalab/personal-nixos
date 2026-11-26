@@ -1,3 +1,9 @@
+// ⚠️ 2026-11-26 起本机改用 Umbriel（`../umbriel/config.toml`），这份 niri 配置
+//    不再由 Home Manager 部署、也不再被 niri 读取；保留它是因为
+//    `~/niri-config/config.kdl` 还软链到这里，也是回滚时的参考。
+//    要让 niri 重新生效：在 `modules/desktop.nix` 恢复 `programs.niri.enable`，
+//    并在 `home/cloudygirl/desktop.nix` 重新映射 `niri/config.kdl`。
+
 spawn-at-startup "fcitx5"
 spawn-at-startup "systemctl" "--user" "import-environment" "DISPLAY" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP" "XDG_SESSION_TYPE" "NIRI_SOCKET"
 spawn-at-startup "systemctl" "--user" "start" "polkit-kde-agent.service"

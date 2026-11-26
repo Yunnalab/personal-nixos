@@ -74,7 +74,7 @@ flake.nix                          输入版本与系统组装（nixpkgs / home-
 | `devices/nixos/hardware-tweaks.nix` | 华硕键盘背光、`hid-asus` 回归的内核处理，本机专属 |
 | `devices/nixos/power.nix` | TLP、CPU 调速与电源策略，本机专属 |
 | `devices/nixos/fan-mode.nix` | `fan-mode` 命令（四档 `powersave`/`quiet`/`balanced`/`performance`）、platform_profile 与开机恢复服务，本机专属 |
-| `modules/desktop.nix` | Plasma/Niri 会话、greetd + noctalia-greeter、PipeWire、polkit（含 pkexec wrapper 与登录界面免密同步规则）、文件管理器服务、niri 退出超时 |
+| `modules/desktop.nix` | Plasma/Umbriel 会话（Umbriel 主桌面，Plasma 备用）、greetd + noctalia-greeter、PipeWire、polkit（含 pkexec wrapper 与登录界面免密同步规则）、文件管理器服务、合成器退出超时 |
 | `modules/locale.nix` | 中文区域、时区、Fcitx5 与输入法环境变量 |
 | `modules/networking.nix` | NetworkManager、nm-applet 与 OpenSSH（主机名、开放端口在 `devices/nixos/configuration.nix`） |
 | `modules/nix-settings.nix` | Nix 功能、substituters 顺序、unfree 策略与每周 GC |
@@ -101,6 +101,7 @@ flake.nix                          输入版本与系统组装（nixpkgs / home-
 | `apps/nixos/nixpkgs-overrides.nix` | 对上游包的最小 overlay 修补（pyopenjtalk-plus 测试、calibre 的 speechd 安装检查），每条都写了原因与回退条件 |
 | `apps/home/chrome.nix` | Chrome 固定走 Clash 混合端口（含视频解码参数） |
 | `apps/home/chatgpt-proxy.nix` | ChatGPT 的第二个（代理）启动入口，见下节 |
+| `apps/home/element.nix` | Element Desktop 的 wrapper：补 `--password-store=gnome-libsecret`（否则 Niri 下白屏）+ 固定走 Clash 代理，见下节 |
 
 `apps/nixos/` 是 NixOS 模块，`apps/home/` 是 Home Manager 模块，两边不能互相导入。
 
@@ -111,8 +112,8 @@ flake.nix                          输入版本与系统组装（nixpkgs / home-
 | `home/cloudygirl/home.nix` | `imports`、`sessionPath`（npm/cargo）、`PUPPETEER_EXECUTABLE_PATH` 与 `MERMAID_CLI_PATH` 两个会话变量 |
 | `home/cloudygirl/shell.nix` | Fish、Starship、direnv/zoxide/fzf 集成、`restart`/`proxy` 函数、eza 自动列目录 hook |
 | `home/cloudygirl/apps.nix` | 应用本体的一般配置：Firefox、Rime 数据文件、Thunar 自定义动作（Chrome 与其代理参数在 `apps/home/chrome.nix`） |
-| `home/cloudygirl/mime.nix` | 全部默认打开方式，以及 KDE/Niri 的 `*-mimeapps.list` 兼容映射 |
-| `home/cloudygirl/desktop.nix` | Noctalia Shell、niri/kitty/swaylock/eza 配置映射、polkit-kde-agent 用户服务 |
+| `home/cloudygirl/mime.nix` | 全部默认打开方式，以及 KDE/Umbriel 的 `*-mimeapps.list` 兼容映射 |
+| `home/cloudygirl/desktop.nix` | Noctalia Shell、umbriel/kitty/swaylock/eza 配置映射、polkit-kde-agent 用户服务 |
 | `home/cloudygirl/tmux.nix` | tmux：prefix `C-a`、extended-keys（pi 换行必需）、resurrect/continuum、多 agent 工作台键位 |
 | `home/cloudygirl/pi-agents.nix` | 把 `config/pi/agents/*.md` 部署成子 agent 定义，并安装 `agent-farm` |
 | `home/cloudygirl/packages.nix` | 仅当前用户需要的软件包（`lib.mkAfter`，排在程序模块的包之后） |
@@ -203,6 +204,86 @@ NixOS 模块与 Home Manager 模块使用不同的选项空间，不要互相直
 2. **environ 会被清零**：ChatGPT 起来后把自身 `/proc/<pid>/environ` 全部写成 NUL，**不能**用环境变量判断“是否已走代理”。改为读主进程 cmdline（主进程 = cmdline 不含 `--type=` 的那个）里有没有 `--proxy-server=http://127.0.0.1:7897`。
 
 代理入口刻意不声明 `MimeType`，否则会和 `chatgpt.desktop` 抢 `mime.nix` 里的 http/https/codex 默认处理程序。
+
+## Element Desktop 的两个修补（2026-11-26）
+
+`element-desktop` 在 `apps/home/element.nix` 里被 `symlinkJoin` 包了一层，追加两组参数：
+`--password-store=gnome-libsecret` 和 Clash 代理（`--proxy-server` + `*_proxy` 环境变量）。
+
+### ① 白屏 = keyring，不是显卡
+
+Electron 的 `safeStorage` 只按 `XDG_CURRENT_DESKTOP` 猜后端（`*KDE*`→kwallet，
+`*GNOME*`→gnome-libsecret，其余一律退化到 `basic_text`），而 Umbriel 的
+`XDG_CURRENT_DESKTOP=umbriel`（niri 时代是 `niri`）落到「其余」分支，于是即使
+gnome-keyring 已占着 `org.freedesktop.secrets` 也不会被用，Element 只弹「System unsupported」模态框，
+看起来就是白屏（登录页其实已经渲染好，被模态框盖住）。
+
+排错要点，别走回头路：
+
+- 不是显卡/PRIME offload/Wayland 问题。`--ozone-platform=wayland' is not compatible with Vulkan`
+  只是日志噪音，加 `--disable-gpu` 没用。
+- **不要**为了这个改全局 `XDG_CURRENT_DESKTOP=GNOME`，会连带影响所有 GTK/Qt 应用。
+- **不要**点对话框里的「Use weaker encryption」，token 会以 `basic_text` 落盘。
+- 诊断命令：`element-desktop --enable-logging=stderr 2>&1 | grep -i safeStorage`，
+  正常时应当**没有**输出；再确认后端用 `busctl --user list | grep secrets`（应为 gnome-keyring）。
+  会看到一次 `Starting safeStorage migration to gnome_libsecret` + `Relaunching app...`，属正常。
+- 复查实例时用 `--user-data-dir=/tmp/el-test-N` 另开一个，避免单实例锁干扰。
+- 刚 `pkill` 完立刻重启可能撞上 `GPU process launch failed: error_code=1002` /
+  `GPU process isn't usable. Goodbye.`，等 2~3 秒再启就没事，不是配置问题。
+
+### ② 必须走代理
+
+`matrix-client.matrix.org` 直连超时（Element 里的表现是 `Invalid /versions response`），
+走 Clash 混合端口 200/0.3s。所以这里**只保留一个固定走代理的入口**，没做像 ChatGPT 那样的
+「直连 + 代理」双条目：Element 也是单实例应用，两条目得配一套停旧实例再重启的逻辑，
+而直连条目在本机根本用不了。要直连就把 `element.nix` 里的 `--proxy-server` 和 `--set *_proxy` 去掉。
+
+验证是否真的走了代理：启动后 `ss -tnp | grep 7897` 应能看到 Element 的连接。
+
+## 桌面合成器：Umbriel 取代 niri（2026-11-26）
+
+主桌面从 niri 换成了 [Umbriel](https://docs.noctalia.dev/umbriel/)（noctalia-dev 的
+wlroots + SceneFX 合成器）。配置抄自 `github:Lhcfl/nixos-cfg` 的 Umbriel 部分，
+但**没有引入它的 `tessera` 声明式合成器模块**：本机仍是手写配置文件 + Home Manager
+映射，和 niri 时代一致。
+
+| 位置 | 变化 |
+| --- | --- |
+| `modules/desktop.nix` | `programs.niri.enable` → `programs.umbriel.enable`（该模块自带 umbriel、`xdg-desktop-portal-umbriel`、wayland-session 条目与 `umbriel.service`）；`defaultSession` 与 greeter 的 `session.default` 都改成 `umbriel`（greeter 按 `.desktop` 的 Name 字段**大小写不敏感**匹配，`niri`/`Niri` 时代已验证）；关机超时从 `niri.service` 挪到 `umbriel.service` |
+| `home/cloudygirl/config/umbriel/config.toml` | 新的合成器配置（TOML），逐项由原来的 `config/niri/config.kdl` 翻译 |
+| `home/cloudygirl/desktop.nix` | 部署 `umbriel/config.toml`；Noctalia 模板 `builtin_ids` 从 `niri` 换成 `umbriel`；激活时预先 `touch ~/.config/umbriel/noctalia.toml` |
+| `home/cloudygirl/mime.nix` | `niri-mimeapps.list` → `umbriel-mimeapps.list`（Umbriel 设 `XDG_CURRENT_DESKTOP=umbriel`） |
+| `home/cloudygirl/packages.nix` | 去掉 `xwayland-satellite`：Umbriel 自带 Xwayland（`general.xwayland`） |
+| `config/noctalia/noctalia-base-settings-v4.json` | `customLaunchPrefix` / `launch_apps_custom_command` 改为 `umbriel msg spawn ...`，模板 id 换成 `umbriel` |
+
+### 翻译时踩到的几处不对等
+
+- **配置语言不同**：niri 是 KDL，Umbriel 是 TOML，没有自动迁移工具。改完用
+  `umbriel config validate` 校验（会报未知 action、越界值、非法键，比 niri 的
+  静默忽略友好）。`umbriel msg config-reload` 热重载，但 `general.xwayland`、
+  `general.autostart`、`xwayland_*` 仍要重启会话。
+- **边框不能渐变**：niri 的 `active-gradient` 无对应项，`[colors.border]` 只接受单色，
+  现在用渐变中点 `#ddaa77ee` 近似。Noctalia 主题模板会覆盖成主题色。
+- **截图移到 Noctalia**：`noctalia msg screenshot-region/fullscreen/window`，niri 自带的
+  截图 UI（Space 保存复制、Ctrl+C 只复制）随之消失，换成 Noctalia 的截图窗口
+  （保存/复制行为由 Noctalia 的截图设置决定）。
+- **工作区清单**：Umbriel 的 `[output.<连接器>] workspaces` 可以是动态清单或固定数量。
+  动态清单下 `workspace-switch 5` 在工作区不足 5 个时会落到最后一个，和 niri 的
+  「按编号按需新建」不同；所以内屏 `eDP-1` 写死 `workspaces = 9` 保住 Mod+1..9，
+  外接显示器仍是动态清单。原 niri 里的 `Mod+Shift+N { move-window-to-workspace 255; }`
+  没有等价物，已去掉。
+- **`[keybinds]` 是整份替换**：写了这张表就不再继承内置绑定，所以常用绑定都要列全。
+  内置默认里有 `Mod+O` 开 overview、`Mod+Shift+Escape` 切快捷键直通，本机已显式保留。
+- **合成器自启动列表**：`[general] autostart` 走 `/bin/sh -c`（或有 systemd 时走
+  `systemd-run` scope）。不再需要 niri 里的 `systemctl --user import-environment`，
+  `start-umbriel` 自己会把登录环境导入用户会话。
+
+### 回滚
+
+`config/niri/config.kdl` 仍然留在仓库里（`~/niri-config/config.kdl` 软链指向它），
+但**不再被部署**。要回 niri：`modules/desktop.nix` 恢复 `programs.niri.enable`、把
+`defaultSession`/`session.default` 改回 `niri`，`home/cloudygirl/desktop.nix` 重新映射
+`niri/config.kdl` 并把 `builtin_ids` 里的 `umbriel` 换回 `niri`。
 
 ## 多 agent 工作台
 
